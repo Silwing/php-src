@@ -1037,6 +1037,7 @@ static inline zval **zend_fetch_dimension_address_inner(HashTable *ht, const zva
 
 	switch (dim->type) {
 		case IS_NULL:
+		    fprintf(stderr, "null\t\t0\n");
 			offset_key = "";
 			offset_key_length = 0;
 			hval = zend_inline_hash_func("", 1);
@@ -1046,6 +1047,8 @@ static inline zval **zend_fetch_dimension_address_inner(HashTable *ht, const zva
 
 			offset_key = dim->value.str.val;
 			offset_key_length = dim->value.str.len;
+
+		    fprintf(stderr, "string\t%s\t%d\n", offset_key, offset_key_length);
 
 			if (dim_type == IS_CONST) {
 				hval = Z_HASH_P(dim);
@@ -1078,14 +1081,21 @@ fetch_string_dim:
 			break;
 		case IS_DOUBLE:
 			hval = zend_dval_to_lval(Z_DVAL_P(dim));
+			fprintf(stderr, "double\t");
 			goto num_index;
 		case IS_RESOURCE:
+		    fprintf(stderr, "resource\t");
 			zend_error(E_STRICT, "Resource ID#%ld used as offset, casting to integer (%ld)", Z_LVAL_P(dim), Z_LVAL_P(dim));
 			/* Fall Through */
 		case IS_BOOL:
+		    fprintf(stderr, "bool\t");
+			hval = Z_LVAL_P(dim);
+			goto num_index;
 		case IS_LONG:
+		    fprintf(stderr, "long\t");
 			hval = Z_LVAL_P(dim);
 num_index:
+            fprintf(stderr, "%lu\t\n", hval);
 			if (zend_hash_index_find(ht, hval, (void **) &retval) == FAILURE) {
 				switch (type) {
 					case BP_VAR_R:
@@ -1140,6 +1150,7 @@ fetch_from_array:
 					Z_DELREF_P(new_zval);
 				}
 			} else {
+	            fprintf(stderr, "array_write\t%p\t", container);
 				retval = zend_fetch_dimension_address_inner(Z_ARRVAL_P(container), dim, dim_type, type TSRMLS_CC);
 			}
 			result->var.ptr_ptr = retval;
@@ -1285,9 +1296,11 @@ static void zend_fetch_dimension_address_read(temp_variable *result, zval *conta
 {
 	zval **retval;
 
+
 	switch (Z_TYPE_P(container)) {
 
 		case IS_ARRAY:
+            fprintf(stderr, "array_read\t%p\t", container);
 			retval = zend_fetch_dimension_address_inner(Z_ARRVAL_P(container), dim, dim_type, type TSRMLS_CC);
 			result->var.ptr = *retval;
 			PZVAL_LOCK(*retval);
