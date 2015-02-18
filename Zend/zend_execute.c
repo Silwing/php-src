@@ -904,6 +904,13 @@ static inline zval* zend_assign_to_variable(zval **variable_ptr_ptr, zval *value
 	zval *variable_ptr = *variable_ptr_ptr;
 	zval garbage;
 
+	fprintf(stderr, "assign_var\t");
+	rb_log_line_file();
+	rb_log_zval_p(value);
+	/*if(Z_AST_P(variable_ptr)) {
+	    fprintf(stderr, "%d\n", (*Z_AST_P(variable_ptr)).kind);
+    }*/
+
 	if (Z_TYPE_P(variable_ptr) == IS_OBJECT &&
 	    UNEXPECTED(Z_OBJ_HANDLER_P(variable_ptr, set) != NULL)) {
 		Z_OBJ_HANDLER_P(variable_ptr, set)(variable_ptr_ptr, value TSRMLS_CC);

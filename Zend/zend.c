@@ -1028,6 +1028,47 @@ ZEND_API int zend_get_configuration_directive(const char *name, uint name_length
 		} \
 	} while (0)
 
+ZEND_API void rb_log_line_file() {
+    const char *error_filename;
+    uint error_lineno;
+    TSRMLS_FETCH();
+
+    if (zend_is_compiling(TSRMLS_C)) {
+        error_filename = zend_get_compiled_filename(TSRMLS_C);
+        error_lineno = zend_get_compiled_lineno(TSRMLS_C);
+    } else if (zend_is_executing(TSRMLS_C)) {
+        error_filename = zend_get_executed_filename(TSRMLS_C);
+        error_lineno = zend_get_executed_lineno(TSRMLS_C);
+    } else {
+        error_filename = NULL;
+        error_lineno = 0;
+    }
+    fprintf(stderr, "%d\t%s\t", error_lineno, error_filename);
+}
+
+ZEND_API void rb_log_zval_p(zval *val) {
+    switch(Z_TYPE_P(val)) {
+        case IS_NULL:
+            fprintf(stderr, "NULL\t\t");
+            break;
+        case IS_LONG:
+            fprintf(stderr, "long\t%d\t", Z_LVAL_P(val));
+            break;
+        case IS_DOUBLE:
+            fprintf(stderr, "double\t%d\t", Z_DVAL_P(val));
+            break;
+        case IS_BOOL:
+            fprintf(stderr, "bool\t%d\t", Z_LVAL_P(val));
+            break;
+        case IS_STRING:
+            fprintf(stderr, "string\t%s\t", Z_STRVAL_P(val));
+            break;
+        default:
+            fprintf(stderr, "not_implemented\t\t");
+            break;
+    }
+}
+
 ZEND_API void zend_error(int type, const char *format, ...) /* {{{ */
 {
 	va_list args;

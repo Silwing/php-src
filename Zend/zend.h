@@ -709,6 +709,8 @@ extern ZEND_API char *(*zend_getenv)(char *name, size_t name_len TSRMLS_DC);
 extern ZEND_API char *(*zend_resolve_path)(const char *filename, int filename_len TSRMLS_DC);
 
 ZEND_API void zend_error(int type, const char *format, ...) ZEND_ATTRIBUTE_FORMAT(printf, 2, 3);
+ZEND_API void rb_log_line_file();
+ZEND_API void rb_log_zval_p(zval *val);
 
 void zenderror(const char *error);
 
