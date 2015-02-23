@@ -907,10 +907,10 @@ static inline zval* zend_assign_to_variable(zval **variable_ptr_ptr, zval *value
 	fprintf(stderr, "assign_var\t");
 	rb_log_line_file();
 	rb_log_zval_p(value);
-    if(Z_AST_P(variable_ptr)) {
+    /*if(Z_AST_P(variable_ptr)) {
 	    fprintf(stderr, "value exists\t");
         fprintf(stderr, "%d", Z_AST_P(variable_ptr)->kind);
-	}
+	}*/
 	fprintf(stderr, "\n");
 
 	if (Z_TYPE_P(variable_ptr) == IS_OBJECT &&
@@ -1159,7 +1159,9 @@ fetch_from_array:
 					Z_DELREF_P(new_zval);
 				}
 			} else {
-	            fprintf(stderr, "array_write\t%p\t", container);
+	            fprintf(stderr, "array_write\t");
+	            rb_log_line_file();
+	            fprintf(stderr, "%p\t", container);
 				retval = zend_fetch_dimension_address_inner(Z_ARRVAL_P(container), dim, dim_type, type TSRMLS_CC);
 			}
 			result->var.ptr_ptr = retval;
@@ -1309,7 +1311,9 @@ static void zend_fetch_dimension_address_read(temp_variable *result, zval *conta
 	switch (Z_TYPE_P(container)) {
 
 		case IS_ARRAY:
-            fprintf(stderr, "array_read\t%p\t", container);
+            fprintf(stderr, "array_read\t");
+            rb_log_line_file();
+            fprintf(stderr, "%p\t", container);
 			retval = zend_fetch_dimension_address_inner(Z_ARRVAL_P(container), dim, dim_type, type TSRMLS_CC);
 			result->var.ptr = *retval;
 			PZVAL_LOCK(*retval);
