@@ -1068,6 +1068,33 @@ ZEND_API void rb_log_zval_p(zval *val) {
             break;
     }
 }
+static int rb_element_apply_func(zval **zv TSRMLS_DC, int num_args, va_list args, zend_hash_key *hash_key) {
+
+    int *lastKey, *currentType;
+    currentType = va_arg(args, int*);
+
+    if(hash_key->nKeyLength == 0) { /* numeric key */
+        lastKey = va_arg(args, int*);
+        if(*currentType == RB_ARRAY_UNKNOWN) {
+            *currentType = RB_ARRAY_LIST;
+        }
+        if(*currentType == RB_ARRAY_LIST && (++(*lastKey)) != hash_key->h) {
+            *currentType = RB_ARRAY_SLIST;
+        }
+        return ZEND_HASH_APPLY_KEEP;
+    } else {
+        *currentType = RB_ARRAY_OBJECT;
+        return ZEND_HASH_APPLY_STOP;
+    }
+}
+ZEND_API int rb_array_type(HashTable *ht) {
+    int result = RB_ARRAY_UNKNOWN;
+    int lastKey = -1;
+
+    zend_hash_apply_with_arguments(ht TSRMLS_CC, (apply_func_args_t) rb_element_apply_func, 2, &result, &lastKey);
+
+    return result;
+}
 
 ZEND_API void zend_error(int type, const char *format, ...) /* {{{ */
 {
