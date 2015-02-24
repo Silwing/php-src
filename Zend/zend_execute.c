@@ -907,10 +907,13 @@ static inline zval* zend_assign_to_variable(zval **variable_ptr_ptr, zval *value
 	fprintf(stderr, "assign_var\t");
 	rb_log_line_file();
 	rb_log_zval_p(value);
-    /*if(Z_AST_P(variable_ptr)) {
+    if(Z_AST_P(variable_ptr) != NULL) {
 	    fprintf(stderr, "value exists\t");
-        fprintf(stderr, "%d", Z_AST_P(variable_ptr)->kind);
-	}*/
+		switch(Z_AST_P(variable_ptr)->kind){
+		
+		default:
+			fprintf(stderr, "%lu", sizeof(*Z_AST_P(variable_ptr)));
+		}
 	fprintf(stderr, "\n");
 
 	if (Z_TYPE_P(variable_ptr) == IS_OBJECT &&
