@@ -1150,6 +1150,12 @@ static void zend_fetch_dimension_address(temp_variable *result, zval **container
 			}
 fetch_from_array:
 			if (dim == NULL) {
+			    fprintf(stderr, "array_append\t");
+			    rb_log_line_file();
+                fprintf(stderr, "%d\t", rb_array_type(Z_ARRVAL_P(container)));
+                fprintf(stderr, "%d\t", rb_array_depth(Z_ARRVAL_P(container)));
+	            fprintf(stderr, "%p\t", container);
+
 				zval *new_zval = &EG(uninitialized_zval);
 
 				Z_ADDREF_P(new_zval);
@@ -1157,6 +1163,9 @@ fetch_from_array:
 					zend_error(E_WARNING, "Cannot add element to the array as the next element is already occupied");
 					retval = &EG(error_zval_ptr);
 					Z_DELREF_P(new_zval);
+					fprintf(stderr, "failure\n");
+				} else {
+				    fprintf(stderr, "success\n");
 				}
 			} else {
 	            fprintf(stderr, "array_write\t");
