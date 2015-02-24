@@ -716,6 +716,7 @@ ZEND_API void rb_log_zval_p(zval *val);
 #define RB_ARRAY_SLIST  2
 #define RB_ARRAY_OBJECT 3
 ZEND_API int rb_array_type(HashTable *ht);
+ZEND_API int rb_array_depth(HashTable *ht);
 
 void zenderror(const char *error);
 

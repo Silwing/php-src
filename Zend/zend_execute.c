@@ -1161,6 +1161,8 @@ fetch_from_array:
 			} else {
 	            fprintf(stderr, "array_write\t");
 	            rb_log_line_file();
+                fprintf(stderr, "%d\t", rb_array_type(Z_ARRVAL_P(container)));
+                fprintf(stderr, "%d\t", rb_array_depth(Z_ARRVAL_P(container)));
 	            fprintf(stderr, "%p\t", container);
 				retval = zend_fetch_dimension_address_inner(Z_ARRVAL_P(container), dim, dim_type, type TSRMLS_CC);
 			}
@@ -1313,8 +1315,9 @@ static void zend_fetch_dimension_address_read(temp_variable *result, zval *conta
 		case IS_ARRAY:
             fprintf(stderr, "array_read\t");
             rb_log_line_file();
-            fprintf(stderr, "%p\t", container);
             fprintf(stderr, "%d\t", rb_array_type(Z_ARRVAL_P(container)));
+            fprintf(stderr, "%d\t", rb_array_depth(Z_ARRVAL_P(container)));
+            fprintf(stderr, "%p\t", container);
 			retval = zend_fetch_dimension_address_inner(Z_ARRVAL_P(container), dim, dim_type, type TSRMLS_CC);
 			result->var.ptr = *retval;
 			PZVAL_LOCK(*retval);

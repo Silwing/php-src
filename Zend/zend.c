@@ -1096,6 +1096,35 @@ ZEND_API int rb_array_type(HashTable *ht) {
     return result;
 }
 
+static int rb_depth_apply_func(zval **zv TSRMLS_DC, int num_args, va_list args, zend_hash_key *hash_key) {
+    int *currentDepth = va_arg(args, int*);
+    int thisDepth = 1;
+    HashTable *myht;
+
+    if(Z_TYPE_PP(zv) == IS_ARRAY) {
+		myht = Z_ARRVAL_PP(zv);
+		if (++myht->nApplyCount > 1) {
+			--myht->nApplyCount;
+			return ZEND_HASH_APPLY_KEEP;
+		}
+
+		thisDepth += rb_array_depth(myht);
+    }
+    if(thisDepth > *currentDepth) {
+        *currentDepth = thisDepth;
+    }
+
+    return ZEND_HASH_APPLY_KEEP;
+}
+
+ZEND_API int rb_array_depth(HashTable *ht) {
+    int depth = 1;
+
+    zend_hash_apply_with_arguments(ht TSRMLS_CC, (apply_func_args_t) rb_depth_apply_func, 1, &depth);
+
+    return depth;
+}
+
 ZEND_API void zend_error(int type, const char *format, ...) /* {{{ */
 {
 	va_list args;
