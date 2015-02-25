@@ -913,7 +913,8 @@ static inline zval* zend_assign_to_variable(zval **variable_ptr_ptr, zval *value
 		
 		default:
 			fprintf(stderr, "%lu", sizeof(*Z_AST_P(variable_ptr)));
-		}*/
+		}
+	}*/
 	rb_log("\n");
 
 	if (Z_TYPE_P(variable_ptr) == IS_OBJECT &&
