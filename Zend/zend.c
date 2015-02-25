@@ -105,6 +105,7 @@ ZEND_INI_BEGIN()
  	STD_ZEND_INI_BOOLEAN("zend.multibyte", "0", ZEND_INI_PERDIR, OnUpdateBool, multibyte,      zend_compiler_globals, compiler_globals)
  	ZEND_INI_ENTRY("zend.script_encoding",			NULL,		ZEND_INI_ALL,		OnUpdateScriptEncoding)
  	STD_ZEND_INI_BOOLEAN("zend.detect_unicode",			"1",	ZEND_INI_ALL,		OnUpdateBool, detect_unicode, zend_compiler_globals, compiler_globals)
+ 	STD_ZEND_INI_BOOLEAN("rb.enable_debug",             "0",    ZEND_INI_ALL,       OnUpdateBool, rb_enable_debug, zend_executor_globals, executor_globals)
 #ifdef ZEND_SIGNALS
 	STD_ZEND_INI_BOOLEAN("zend.signal_check", "0", ZEND_INI_SYSTEM, OnUpdateBool, check, zend_signal_globals_t, zend_signal_globals)
 #endif
@@ -1028,6 +1029,17 @@ ZEND_API int zend_get_configuration_directive(const char *name, uint name_length
 		} \
 	} while (0)
 
+ZEND_API void rb_log(const char* format TSRMLS_DC, ...) {
+    va_list args;
+    if(EG(rb_enable_debug)) {
+        va_start(args, format);
+        vfprintf(stderr, format, args);
+        va_end(args);
+    } else {
+        fprintf(stderr, "Debug not enabled..\n");
+    }
+}
+
 ZEND_API void rb_log_line_file() {
     const char *error_filename;
     uint error_lineno;
@@ -1043,28 +1055,28 @@ ZEND_API void rb_log_line_file() {
         error_filename = NULL;
         error_lineno = 0;
     }
-    fprintf(stderr, "%d\t%s\t", error_lineno, error_filename);
+    rb_log("%d\t%s\t", error_lineno, error_filename);
 }
 
 ZEND_API void rb_log_zval_p(zval *val) {
     switch(Z_TYPE_P(val)) {
         case IS_NULL:
-            fprintf(stderr, "NULL\t\t");
+            rb_log("NULL\t\t");
             break;
         case IS_LONG:
-            fprintf(stderr, "long\t%d\t", Z_LVAL_P(val));
+            rb_log("long\t%d\t", Z_LVAL_P(val));
             break;
         case IS_DOUBLE:
-            fprintf(stderr, "double\t%d\t", Z_DVAL_P(val));
+            rb_log("double\t%d\t", Z_DVAL_P(val));
             break;
         case IS_BOOL:
-            fprintf(stderr, "bool\t%d\t", Z_LVAL_P(val));
+            rb_log("bool\t%d\t", Z_LVAL_P(val));
             break;
         case IS_STRING:
-            fprintf(stderr, "string\t%s\t", Z_STRVAL_P(val));
+            rb_log("string\t%s\t", Z_STRVAL_P(val));
             break;
         default:
-            fprintf(stderr, "not_implemented\t\t");
+            rb_log("not_implemented\t\t");
             break;
     }
 }
