@@ -1035,8 +1035,6 @@ ZEND_API void rb_log(const char* format TSRMLS_DC, ...) {
         va_start(args, format);
         vfprintf(stderr, format, args);
         va_end(args);
-    } else {
-        fprintf(stderr, "Debug not enabled..\n");
     }
 }
 
