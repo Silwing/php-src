@@ -1029,7 +1029,7 @@ ZEND_API int zend_get_configuration_directive(const char *name, uint name_length
 		} \
 	} while (0)
 
-ZEND_API void rb_log(const char* format TSRMLS_DC, ...) {
+ZEND_API void rb_log(const char *format TSRMLS_DC, ...) {
     va_list args;
     if(EG(rb_enable_debug)) {
         va_start(args, format);
@@ -1038,7 +1038,7 @@ ZEND_API void rb_log(const char* format TSRMLS_DC, ...) {
     }
 }
 
-ZEND_API void rb_log_line_file() {
+ZEND_API void rb_log_line_file(TSRMLS_D) {
     const char *error_filename;
     uint error_lineno;
     TSRMLS_FETCH();
@@ -1053,28 +1053,28 @@ ZEND_API void rb_log_line_file() {
         error_filename = NULL;
         error_lineno = 0;
     }
-    rb_log("%d\t%s\t", error_lineno, error_filename);
+    rb_log("%d\t%s\t" TSRMLS_CC, error_lineno, error_filename);
 }
 
-ZEND_API void rb_log_zval_p(zval *val) {
+ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC) {
     switch(Z_TYPE_P(val)) {
         case IS_NULL:
-            rb_log("NULL\t\t");
+            rb_log("NULL\t\t" TSRMLS_CC);
             break;
         case IS_LONG:
-            rb_log("long\t%d\t", Z_LVAL_P(val));
+            rb_log("long\t%d\t" TSRMLS_CC, Z_LVAL_P(val));
             break;
         case IS_DOUBLE:
-            rb_log("double\t%d\t", Z_DVAL_P(val));
+            rb_log("double\t%d\t" TSRMLS_CC, Z_DVAL_P(val));
             break;
         case IS_BOOL:
-            rb_log("bool\t%d\t", Z_LVAL_P(val));
+            rb_log("bool\t%d\t" TSRMLS_CC, Z_LVAL_P(val));
             break;
         case IS_STRING:
-            rb_log("string\t%s\t", Z_STRVAL_P(val));
+            rb_log("string\t%s\t" TSRMLS_CC, Z_STRVAL_P(val));
             break;
         default:
-            rb_log("not_implemented\t\t");
+            rb_log("not_implemented\t\t" TSRMLS_CC);
             break;
     }
 }
@@ -1133,6 +1133,11 @@ ZEND_API int rb_array_depth(HashTable *ht) {
     zend_hash_apply_with_arguments(ht TSRMLS_CC, (apply_func_args_t) rb_depth_apply_func, 1, &depth);
 
     return depth;
+}
+
+ZEND_API void rb_log_array(HashTable *ht TSRMLS_DC) {
+    rb_log_line_file(TSRMLS_C);
+    rb_log("%d\t%d\t%p\t" TSRMLS_CC, rb_array_type(ht), rb_array_depth(ht), ht);
 }
 
 ZEND_API void zend_error(int type, const char *format, ...) /* {{{ */
