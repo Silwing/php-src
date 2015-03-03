@@ -2509,6 +2509,14 @@ PHP_FUNCTION(array_keys)
 		return;
 	}
 
+	rb_php_log("array_keys\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+	rb_php_log("%d\t" TSRMLS_CC, strict);
+	if(search_value) {
+	    rb_php_log_zval_p(search_value TSRMLS_CC);
+	}
+	rb_php_log("\n" TSRMLS_CC);
+
 	if (strict) {
 		is_equal_func = is_identical_function;
 	}
@@ -2552,6 +2560,10 @@ PHP_FUNCTION(array_values)
 		return;
 	}
 
+	rb_php_log("array_values\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+    rb_php_log("\n" TSRMLS_CC);
+
 	/* Initialize return array */
 	array_init_size(return_value, zend_hash_num_elements(Z_ARRVAL_P(input)));
 
@@ -2578,6 +2590,10 @@ PHP_FUNCTION(array_count_values)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a", &input) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_count_values\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+    rb_php_log("\n" TSRMLS_CC);
 
 	/* Initialize return array */
 	array_init(return_value);
@@ -2621,14 +2637,19 @@ zend_bool array_column_param_helper(zval **param,
                                     const char *name TSRMLS_DC) {
 	switch (Z_TYPE_PP(param)) {
 		case IS_DOUBLE:
+		    rb_php_log("double\t%f\t" TSRMLS_CC, Z_DVAL_P(*param));
 			convert_to_long_ex(param);
-			/* fallthrough */
+			return 1;
+
 		case IS_LONG:
+		    rb_php_log("\t\t" TSRMLS_CC);
 			return 1;
 
 		case IS_OBJECT:
+			rb_php_log("object\t\t" TSRMLS_CC);
 			convert_to_string_ex(param);
-			/* fallthrough */
+			return 1;
+
 		case IS_STRING:
 			return 1;
 
@@ -2650,6 +2671,16 @@ PHP_FUNCTION(array_column)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "hZ!|Z!", &arr_hash, &zcolumn, &zkey) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_column\t" TSRMLS_CC);
+    rb_php_log_array_function(arr_hash TSRMLS_CC);
+    if(zcolumn) {
+        rb_php_log_zval_p(*zcolumn TSRMLS_CC);
+    }
+    if(zkey) {
+        rb_php_log_zval_p(*zkey TSRMLS_CC);
+    }
+    rb_php_log("\n" TSRMLS_CC);
 
 	if ((zcolumn && !array_column_param_helper(zcolumn, "column" TSRMLS_CC)) ||
 	    (zkey && !array_column_param_helper(zkey, "index" TSRMLS_CC))) {
@@ -2723,6 +2754,10 @@ PHP_FUNCTION(array_reverse)
 		return;
 	}
 
+	rb_php_log("array_reverse\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+    rb_php_log("%d\n" TSRMLS_CC, preserve_keys);
+
 	/* Initialize return array */
 	array_init_size(return_value, zend_hash_num_elements(Z_ARRVAL_P(input)));
 
@@ -2766,6 +2801,11 @@ PHP_FUNCTION(array_pad)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "alz", &input, &pad_size, &pad_value) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_pad\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+    rb_php_log_zval_p(pad_value TSRMLS_CC);
+    rb_php_log("%ld\n" TSRMLS_CC, pad_size);
 
 	/* Do some initial calculations */
 	input_size = zend_hash_num_elements(Z_ARRVAL_P(input));
@@ -2820,6 +2860,10 @@ PHP_FUNCTION(array_flip)
 		return;
 	}
 
+	rb_php_log("array_kflip\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+    rb_php_log("\n" TSRMLS_CC);
+
 	array_init_size(return_value, zend_hash_num_elements(Z_ARRVAL_P(array)));
 
 	zend_hash_internal_pointer_reset_ex(Z_ARRVAL_P(array), &pos);
@@ -2856,6 +2900,10 @@ PHP_FUNCTION(array_change_key_case)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|l", &array, &change_to_upper) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_change_key_case\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+    rb_php_log("%ld\n" TSRMLS_CC, change_to_upper);
 
 	array_init_size(return_value, zend_hash_num_elements(Z_ARRVAL_P(array)));
 
@@ -2901,6 +2949,10 @@ PHP_FUNCTION(array_unique)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|l", &array, &sort_type) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_unique\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+    rb_php_log("%ld\n" TSRMLS_CC, sort_type);
 
 	php_set_compare_func(sort_type TSRMLS_CC);
 
@@ -3222,6 +3274,11 @@ static void php_array_intersect(INTERNAL_FUNCTION_PARAMETERS, int behavior, int 
 			goto out;
 		}
 		hash = Z_ARRVAL_PP(args[i]);
+
+        rb_php_log("array_it_part\t" TSRMLS_CC);
+        rb_php_log_array_function(hash TSRMLS_CC);
+        rb_php_log("\n" TSRMLS_CC);
+
 		list = (Bucket **) pemalloc((hash->nNumOfElements + 1) * sizeof(Bucket *), hash->persistent);
 		if (!list) {
 			PHP_ARRAY_CMP_FUNC_RESTORE();
@@ -3375,6 +3432,7 @@ out:
    Returns the entries of arr1 that have keys which are present in all the other arguments. Kind of equivalent to array_diff(array_keys($arr1), array_keys($arr2)[,array_keys(...)]). Equivalent of array_intersect_assoc() but does not do compare of the data. */
 PHP_FUNCTION(array_intersect_key)
 {
+    rb_php_log("array_intersect_key\n" TSRMLS_CC);
 	php_array_intersect_key(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTERSECT_COMP_DATA_NONE);
 }
 /* }}} */
@@ -3383,6 +3441,7 @@ PHP_FUNCTION(array_intersect_key)
    Returns the entries of arr1 that have keys which are present in all the other arguments. Kind of equivalent to array_diff(array_keys($arr1), array_keys($arr2)[,array_keys(...)]). The comparison of the keys is performed by a user supplied function. Equivalent of array_intersect_uassoc() but does not do compare of the data. */
 PHP_FUNCTION(array_intersect_ukey)
 {
+    rb_php_log("array_intersect_ukey\n" TSRMLS_CC);
 	php_array_intersect(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTERSECT_KEY, INTERSECT_COMP_DATA_INTERNAL, INTERSECT_COMP_KEY_USER);
 }
 /* }}} */
@@ -3391,6 +3450,7 @@ PHP_FUNCTION(array_intersect_ukey)
    Returns the entries of arr1 that have values which are present in all the other arguments */
 PHP_FUNCTION(array_intersect)
 {
+    rb_php_log("array_intersect\n" TSRMLS_CC);
 	php_array_intersect(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTERSECT_NORMAL, INTERSECT_COMP_DATA_INTERNAL, INTERSECT_COMP_KEY_INTERNAL);
 }
 /* }}} */
@@ -3399,6 +3459,7 @@ PHP_FUNCTION(array_intersect)
    Returns the entries of arr1 that have values which are present in all the other arguments. Data is compared by using an user-supplied callback. */
 PHP_FUNCTION(array_uintersect)
 {
+    rb_php_log("array_uintersect\n" TSRMLS_CC);
 	php_array_intersect(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTERSECT_NORMAL, INTERSECT_COMP_DATA_USER, INTERSECT_COMP_KEY_INTERNAL);
 }
 /* }}} */
@@ -3407,6 +3468,7 @@ PHP_FUNCTION(array_uintersect)
    Returns the entries of arr1 that have values which are present in all the other arguments. Keys are used to do more restrictive check */
 PHP_FUNCTION(array_intersect_assoc)
 {
+    rb_php_log("array_intersect_assoc\n" TSRMLS_CC);
 	php_array_intersect_key(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTERSECT_COMP_DATA_INTERNAL);
 }
 /* }}} */
@@ -3415,6 +3477,7 @@ PHP_FUNCTION(array_intersect_assoc)
    Returns the entries of arr1 that have values which are present in all the other arguments. Keys are used to do more restrictive check and they are compared by using an user-supplied callback. */
 PHP_FUNCTION(array_intersect_uassoc)
 {
+    rb_php_log("array_intersect_uassoc\n" TSRMLS_CC);
 	php_array_intersect(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTERSECT_ASSOC, INTERSECT_COMP_DATA_INTERNAL, INTERSECT_COMP_KEY_USER);
 }
 /* }}} */
@@ -3423,6 +3486,7 @@ PHP_FUNCTION(array_intersect_uassoc)
    Returns the entries of arr1 that have values which are present in all the other arguments. Keys are used to do more restrictive check. Data is compared by using an user-supplied callback. */
 PHP_FUNCTION(array_uintersect_assoc)
 {
+    rb_php_log("array_uintersect_assoc\n" TSRMLS_CC);
 	php_array_intersect_key(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTERSECT_COMP_DATA_USER);
 }
 /* }}} */
@@ -3431,6 +3495,7 @@ PHP_FUNCTION(array_uintersect_assoc)
    Returns the entries of arr1 that have values which are present in all the other arguments. Keys are used to do more restrictive check. Both data and keys are compared by using user-supplied callbacks. */
 PHP_FUNCTION(array_uintersect_uassoc)
 {
+    rb_php_log("array_uintersect_uassoc\n" TSRMLS_CC);
 	php_array_intersect(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTERSECT_ASSOC, INTERSECT_COMP_DATA_USER, INTERSECT_COMP_KEY_USER);
 }
 /* }}} */
@@ -3473,6 +3538,10 @@ static void php_array_diff_key(INTERNAL_FUNCTION_PARAMETERS, int data_compare_ty
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Argument #%d is not an array", i + 1);
 			RETVAL_NULL();
 			goto out;
+		} else {
+		    rb_php_log("array_dk_part\t" TSRMLS_CC);
+		    rb_php_log_array_function(Z_ARRVAL_PP(args[i]) TSRMLS_CC);
+		    rb_php_log("\n" TSRMLS_CC);
 		}
 	}
 
@@ -3639,6 +3708,11 @@ static void php_array_diff(INTERNAL_FUNCTION_PARAMETERS, int behavior, int data_
 			goto out;
 		}
 		hash = Z_ARRVAL_PP(args[i]);
+
+		rb_php_log("array_df_part\t" TSRMLS_CC);
+        rb_php_log_array_function(hash TSRMLS_CC);
+        rb_php_log("\n" TSRMLS_CC);
+
 		list = (Bucket **) pemalloc((hash->nNumOfElements + 1) * sizeof(Bucket *), hash->persistent);
 		if (!list) {
 			PHP_ARRAY_CMP_FUNC_RESTORE();
@@ -3788,6 +3862,7 @@ out:
    Returns the entries of arr1 that have keys which are not present in any of the others arguments. This function is like array_diff() but works on the keys instead of the values. The associativity is preserved. */
 PHP_FUNCTION(array_diff_key)
 {
+    rb_php_log("array_diff_key\n" TSRMLS_CC);
 	php_array_diff_key(INTERNAL_FUNCTION_PARAM_PASSTHRU, DIFF_COMP_DATA_NONE);
 }
 /* }}} */
@@ -3796,6 +3871,7 @@ PHP_FUNCTION(array_diff_key)
    Returns the entries of arr1 that have keys which are not present in any of the others arguments. User supplied function is used for comparing the keys. This function is like array_udiff() but works on the keys instead of the values. The associativity is preserved. */
 PHP_FUNCTION(array_diff_ukey)
 {
+    rb_php_log("array_diff_ukey\n" TSRMLS_CC);
 	php_array_diff(INTERNAL_FUNCTION_PARAM_PASSTHRU, DIFF_KEY, DIFF_COMP_DATA_INTERNAL, DIFF_COMP_KEY_USER);
 }
 /* }}} */
@@ -3804,6 +3880,7 @@ PHP_FUNCTION(array_diff_ukey)
    Returns the entries of arr1 that have values which are not present in any of the others arguments. */
 PHP_FUNCTION(array_diff)
 {
+    rb_php_log("array_diff\n" TSRMLS_CC);
 	php_array_diff(INTERNAL_FUNCTION_PARAM_PASSTHRU, DIFF_NORMAL, DIFF_COMP_DATA_INTERNAL, DIFF_COMP_KEY_INTERNAL);
 }
 /* }}} */
@@ -3812,6 +3889,7 @@ PHP_FUNCTION(array_diff)
    Returns the entries of arr1 that have values which are not present in any of the others arguments. Elements are compared by user supplied function. */
 PHP_FUNCTION(array_udiff)
 {
+    rb_php_log("array_udiff\n" TSRMLS_CC);
 	php_array_diff(INTERNAL_FUNCTION_PARAM_PASSTHRU, DIFF_NORMAL, DIFF_COMP_DATA_USER, DIFF_COMP_KEY_INTERNAL);
 }
 /* }}} */
@@ -3820,6 +3898,7 @@ PHP_FUNCTION(array_udiff)
    Returns the entries of arr1 that have values which are not present in any of the others arguments but do additional checks whether the keys are equal */
 PHP_FUNCTION(array_diff_assoc)
 {
+    rb_php_log("array_diff_assoc\n" TSRMLS_CC);
 	php_array_diff_key(INTERNAL_FUNCTION_PARAM_PASSTHRU, DIFF_COMP_DATA_INTERNAL);
 }
 /* }}} */
@@ -3828,6 +3907,7 @@ PHP_FUNCTION(array_diff_assoc)
    Returns the entries of arr1 that have values which are not present in any of the others arguments but do additional checks whether the keys are equal. Elements are compared by user supplied function. */
 PHP_FUNCTION(array_diff_uassoc)
 {
+    rb_php_log("array_diff_uassoc\n" TSRMLS_CC);
 	php_array_diff(INTERNAL_FUNCTION_PARAM_PASSTHRU, DIFF_ASSOC, DIFF_COMP_DATA_INTERNAL, DIFF_COMP_KEY_USER);
 }
 /* }}} */
@@ -3836,6 +3916,7 @@ PHP_FUNCTION(array_diff_uassoc)
    Returns the entries of arr1 that have values which are not present in any of the others arguments but do additional checks whether the keys are equal. Keys are compared by user supplied function. */
 PHP_FUNCTION(array_udiff_assoc)
 {
+    rb_php_log("array_udiff_assoc\n" TSRMLS_CC);
 	php_array_diff_key(INTERNAL_FUNCTION_PARAM_PASSTHRU, DIFF_COMP_DATA_USER);
 }
 /* }}} */
@@ -3844,6 +3925,7 @@ PHP_FUNCTION(array_udiff_assoc)
    Returns the entries of arr1 that have values which are not present in any of the others arguments but do additional checks whether the keys are equal. Keys and elements are compared by user supplied functions. */
 PHP_FUNCTION(array_udiff_uassoc)
 {
+    rb_php_log("array_udiff_uassoc\n" TSRMLS_CC);
 	php_array_diff(INTERNAL_FUNCTION_PARAM_PASSTHRU, DIFF_ASSOC, DIFF_COMP_DATA_USER, DIFF_COMP_KEY_USER);
 }
 /* }}} */
