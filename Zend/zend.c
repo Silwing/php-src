@@ -1071,7 +1071,7 @@ ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC) {
             rb_log("bool\t%d\t" TSRMLS_CC, Z_LVAL_P(val));
             break;
         case IS_STRING:
-            rb_log("string\t%s\t" TSRMLS_CC, Z_STRVAL_P(val));
+            rb_log("string\t%.100s\t" TSRMLS_CC, Z_STRVAL_P(val));
             break;
         default:
             rb_log("not_implemented\t\t" TSRMLS_CC);
