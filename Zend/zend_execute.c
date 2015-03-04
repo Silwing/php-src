@@ -835,6 +835,11 @@ static inline zval* zend_assign_tmp_to_variable(zval **variable_ptr_ptr, zval *v
 	zval *variable_ptr = *variable_ptr_ptr;
 	zval garbage;
 
+	rb_log("assign_tmp\t" TSRMLS_CC);
+    rb_log_line_file(TSRMLS_C);
+    rb_log_zval_p(value TSRMLS_CC);
+    rb_log("\n" TSRMLS_CC);
+
 	if (Z_TYPE_P(variable_ptr) == IS_OBJECT &&
 	    UNEXPECTED(Z_OBJ_HANDLER_P(variable_ptr, set) != NULL)) {
 		Z_OBJ_HANDLER_P(variable_ptr, set)(variable_ptr_ptr, value TSRMLS_CC);
@@ -867,6 +872,11 @@ static inline zval* zend_assign_const_to_variable(zval **variable_ptr_ptr, zval 
 {
 	zval *variable_ptr = *variable_ptr_ptr;
 	zval garbage;
+
+	rb_log("assign_const\t" TSRMLS_CC);
+    rb_log_line_file(TSRMLS_C);
+    rb_log_zval_p(value TSRMLS_CC);
+    rb_log("\n" TSRMLS_CC);
 
 	if (Z_TYPE_P(variable_ptr) == IS_OBJECT &&
 	    UNEXPECTED(Z_OBJ_HANDLER_P(variable_ptr, set) != NULL)) {
@@ -907,14 +917,6 @@ static inline zval* zend_assign_to_variable(zval **variable_ptr_ptr, zval *value
 	rb_log("assign_var\t" TSRMLS_CC);
 	rb_log_line_file(TSRMLS_C);
 	rb_log_zval_p(value TSRMLS_CC);
-    /*if(Z_AST_P(variable_ptr) != NULL) {
-	    fprintf(stderr, "value exists\t");
-		switch(Z_AST_P(variable_ptr)->kind){
-		
-		default:
-			fprintf(stderr, "%lu", sizeof(*Z_AST_P(variable_ptr)));
-		}
-	}*/
 	rb_log("\n" TSRMLS_CC);
 
 	if (Z_TYPE_P(variable_ptr) == IS_OBJECT &&

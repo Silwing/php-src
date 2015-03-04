@@ -1073,6 +1073,10 @@ ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC) {
         case IS_STRING:
             rb_log("string\t%.100s\t" TSRMLS_CC, Z_STRVAL_P(val));
             break;
+        case IS_ARRAY:
+            rb_log("array\t" TSRMLS_CC);
+            rb_log("%d\t%d\t%p\t" TSRMLS_CC, rb_array_type(Z_ARRVAL_P(val)), rb_array_depth(Z_ARRVAL_P(val)), Z_ARRVAL_P(val));
+            break;
         default:
             rb_log("not_implemented\t\t" TSRMLS_CC);
             break;
