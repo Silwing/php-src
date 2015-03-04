@@ -2204,9 +2204,12 @@ PHP_FUNCTION(array_slice)
 	}
 
 	rb_php_log("array_slice\t" TSRMLS_CC);
-	rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
-	rb_php_log_zval_p(*z_length TSRMLS_CC);
-	rb_php_log("%ld\t%d\n" TSRMLS_CC, offset, preserve_keys);
+    rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+    rb_php_log("%ld\t%d\t" TSRMLS_CC, offset, preserve_keys);
+    if(z_length) {
+        rb_php_log_zval_p(*z_length TSRMLS_CC);
+    }
+    rb_php_log("\n" TSRMLS_CC);
 
 	/* Get number of entries in the input hash */
 	num_in = zend_hash_num_elements(Z_ARRVAL_P(input));
@@ -3985,6 +3988,7 @@ PHP_FUNCTION(array_multisort)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "+", &args, &argc) == FAILURE) {
 		return;
 	}
+	rb_php_log("array_multisort\n" TSRMLS_CC);
 
 	/* Allocate space for storing pointers to input arrays and sort flags. */
 	arrays = (zval ***)ecalloc(argc, sizeof(zval **));
@@ -4000,6 +4004,9 @@ PHP_FUNCTION(array_multisort)
 	 * array, and the very first argument has to be an array. */
 	for (i = 0; i < argc; i++) {
 		if (Z_TYPE_PP(args[i]) == IS_ARRAY) {
+		    rb_php_log("array_ms_part\t" TSRMLS_CC);
+		    rb_php_log_array_function(Z_ARRVAL_PP(args[i]) TSRMLS_CC);
+		    rb_php_log("\n" TSRMLS_CC);
 			/* We see the next array, so we update the sort flags of
 			 * the previous array and reset the sort flags. */
 			if (i > 0) {
@@ -4152,6 +4159,9 @@ PHP_FUNCTION(array_rand)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|l", &input, &num_req) == FAILURE) {
 		return;
 	}
+	rb_php_log("array_rand\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+	rb_php_log("%ld\n" TSRMLS_CC, num_req);
 
 	num_avail = zend_hash_num_elements(Z_ARRVAL_P(input));
 
@@ -4210,6 +4220,10 @@ PHP_FUNCTION(array_sum)
 		return;
 	}
 
+	rb_php_log("array_sum\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
+
 	ZVAL_LONG(return_value, 0);
 
 	for (zend_hash_internal_pointer_reset_ex(Z_ARRVAL_P(input), &pos);
@@ -4240,6 +4254,10 @@ PHP_FUNCTION(array_product)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a", &input) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_product\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
 
 	ZVAL_LONG(return_value, 1);
 	if (!zend_hash_num_elements(Z_ARRVAL_P(input))) {
@@ -4290,6 +4308,15 @@ PHP_FUNCTION(array_reduce)
 		return;
 	}
 
+	rb_php_log("array_reduce\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+	if(initial && Z_TYPE_P(initial) == IS_ARRAY) {
+	    rb_php_log_array_function(Z_ARRVAL_P(initial) TSRMLS_CC);
+	} else if(initial) {
+	    rb_php_log_zval_p(initial TSRMLS_CC);
+	}
+	rb_php_log("\n" TSRMLS_CC);
+
 	if (ZEND_NUM_ARGS() > 2) {
 		ALLOC_ZVAL(result);
 		MAKE_COPY_ZVAL(&initial, result);
@@ -4335,6 +4362,15 @@ PHP_FUNCTION(array_reduce)
 		}
 		zend_hash_move_forward_ex(htbl, &pos);
 	}
+
+	rb_php_log("array_reduce_result\t" TSRMLS_CC);
+	if(result && Z_TYPE_P(result) == IS_ARRAY) {
+    	rb_php_log_array_function(Z_ARRVAL_P(result) TSRMLS_CC);
+	} else if(result) {
+	    rb_php_log_zval_p(result TSRMLS_CC);
+	}
+	rb_php_log("\n" TSRMLS_CC);
+
 	RETVAL_ZVAL(result, 1, 1);
 }
 /* }}} */
@@ -4360,6 +4396,10 @@ PHP_FUNCTION(array_filter)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|fl", &array, &fci, &fci_cache, &use_type) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_filter\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+    rb_php_log("%ld\n" TSRMLS_CC, use_type);
 
 	array_init(return_value);
 	if (zend_hash_num_elements(Z_ARRVAL_P(array)) == 0) {
@@ -4438,6 +4478,9 @@ PHP_FUNCTION(array_filter)
 				break;
 		}
 	}
+	rb_php_log("array_filter_result\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(return_value) TSRMLS_CC);
+    rb_php_log("\n" TSRMLS_CC);
 }
 /* }}} */
 
@@ -4475,6 +4518,10 @@ PHP_FUNCTION(array_map)
 			efree(array_pos);
 			return;
 		}
+		rb_php_log("array_mp_part\t" TSRMLS_CC);
+        rb_php_log_array_function(Z_ARRVAL_PP(arrays[i]) TSRMLS_CC);
+        rb_php_log("\n" TSRMLS_CC);
+
 		SEPARATE_ZVAL_IF_NOT_REF(arrays[i]);
 		args[i] = *arrays[i];
 		array_len[i] = zend_hash_num_elements(Z_ARRVAL_PP(arrays[i]));
@@ -4565,6 +4612,10 @@ PHP_FUNCTION(array_map)
 		}
 	}
 
+	rb_php_log("array_map_result\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(return_value) TSRMLS_CC);
+    rb_php_log("\n" TSRMLS_CC);
+
 	zval_ptr_dtor(&null);
 	efree(params);
 	efree(array_len);
@@ -4583,6 +4634,11 @@ PHP_FUNCTION(array_key_exists)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zH", &key, &array) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_key_exists\t" TSRMLS_CC);
+    rb_php_log_array_function(array TSRMLS_CC);
+    rb_php_log_zval_p(key TSRMLS_CC);
+    rb_php_log("\n" TSRMLS_CC);
 
 	switch (Z_TYPE_P(key)) {
 		case IS_STRING:
@@ -4626,6 +4682,11 @@ PHP_FUNCTION(array_chunk)
 	if (zend_parse_parameters(argc TSRMLS_CC, "al|b", &input, &size, &preserve_keys) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_chunk\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+    rb_php_log("%ld\t%d\n" TSRMLS_CC, size, preserve_keys);
+
 	/* Do bounds checking for size parameter. */
 	if (size < 1) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Size parameter expected to be greater than 0");
@@ -4695,6 +4756,13 @@ PHP_FUNCTION(array_combine)
 		return;
 	}
 
+	rb_php_log("array_combine_keys\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(keys) TSRMLS_CC);
+    rb_php_log("\n" TSRMLS_CC);
+    rb_php_log("array_combine_values\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(values) TSRMLS_CC);
+    rb_php_log("\n" TSRMLS_CC);
+
 	num_keys = zend_hash_num_elements(Z_ARRVAL_P(keys));
 	num_values = zend_hash_num_elements(Z_ARRVAL_P(values));
 
@@ -4738,6 +4806,10 @@ PHP_FUNCTION(array_combine)
 		zend_hash_move_forward_ex(Z_ARRVAL_P(keys), &pos_keys);
 		zend_hash_move_forward_ex(Z_ARRVAL_P(values), &pos_values);
 	}
+
+    rb_php_log("array_combine_result\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(return_value) TSRMLS_CC);
+    rb_php_log("\n" TSRMLS_CC);
 }
 /* }}} */
 
