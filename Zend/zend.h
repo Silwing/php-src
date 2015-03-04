@@ -711,14 +711,15 @@ extern ZEND_API char *(*zend_resolve_path)(const char *filename, int filename_le
 ZEND_API void zend_error(int type, const char *format, ...) ZEND_ATTRIBUTE_FORMAT(printf, 2, 3);
 
 ZEND_API void rb_log(const char *format TSRMLS_DC, ...);
-ZEND_API void rb_log_line_file();
-ZEND_API void rb_log_zval_p(zval *val);
+ZEND_API void rb_log_line_file(TSRMLS_DC);
+ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC);
 #define RB_ARRAY_UNKNOWN 0
 #define RB_ARRAY_LIST   1
 #define RB_ARRAY_SLIST  2
 #define RB_ARRAY_OBJECT 3
 ZEND_API int rb_array_type(HashTable *ht);
 ZEND_API int rb_array_depth(HashTable *ht);
+ZEND_API void rb_log_array(HashTable *ht TSRMLS_DC);
 
 void zenderror(const char *error);
 

@@ -141,6 +141,35 @@ PHP_MSHUTDOWN_FUNCTION(array) /* {{{ */
 }
 /* }}} */
 
+PHPAPI void rb_php_log(const char *format TSRMLS_DC, ...) {
+      va_list args;
+      if(EG(rb_enable_debug)) {
+          va_start(args, format);
+          vfprintf(stderr, format, args);
+          va_end(args);
+      }
+}
+
+PHPAPI int rb_php_array_type(HashTable *ht) {
+    return rb_array_type(ht);
+}
+
+PHPAPI int rb_php_array_depth(HashTable *ht) {
+    return rb_array_depth(ht);
+}
+
+PHPAPI void rb_php_log_zval_p(zval *zv TSRMLS_DC) {
+    rb_log_zval_p(zv TSRMLS_CC);
+}
+PHPAPI void rb_php_log_line_file(TSRMLS_D) {
+    rb_log_line_file(TSRMLS_C);
+}
+
+PHPAPI void rb_php_log_array_function(HashTable *ht TSRMLS_DC) {
+    rb_php_log_line_file(TSRMLS_C);
+    rb_php_log("%d\t%d\t%p\t" TSRMLS_CC, rb_php_array_type(ht), rb_php_array_depth(ht), ht);
+}
+
 static void php_set_compare_func(int sort_type TSRMLS_DC) /* {{{ */
 {
 	switch (sort_type & ~PHP_SORT_FLAG_CASE) {
@@ -244,6 +273,10 @@ PHP_FUNCTION(krsort)
 
 	php_set_compare_func(sort_type TSRMLS_CC);
 
+	rb_php_log("krsort\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+	rb_php_log("%ld\n" TSRMLS_CC, sort_type);
+
 	if (zend_hash_sort(Z_ARRVAL_P(array), zend_qsort, php_array_reverse_key_compare, 0 TSRMLS_CC) == FAILURE) {
 		RETURN_FALSE;
 	}
@@ -261,6 +294,10 @@ PHP_FUNCTION(ksort)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|l", &array, &sort_type) == FAILURE) {
 		RETURN_FALSE;
 	}
+
+	rb_php_log("ksort\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+    rb_php_log("%ld\n" TSRMLS_CC, sort_type);
 
 	php_set_compare_func(sort_type TSRMLS_CC);
 
@@ -314,9 +351,16 @@ PHP_FUNCTION(count)
 
 	switch (Z_TYPE_P(array)) {
 		case IS_NULL:
+		    rb_php_log("count(null)\t" TSRMLS_CC);
+		    rb_php_log_line_file(TSRMLS_C);
+		    rb_php_log("\t\t\t%ld\n" TSRMLS_CC, mode);
 			RETURN_LONG(0);
 			break;
 		case IS_ARRAY:
+		    rb_php_log("count\t" TSRMLS_CC);
+        	rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+        	rb_php_log("%ld\n" TSRMLS_CC, mode);
+
 			RETURN_LONG (php_count_recursive (array, mode TSRMLS_CC));
 			break;
 		case IS_OBJECT: {
@@ -461,6 +505,9 @@ static void php_natsort(INTERNAL_FUNCTION_PARAMETERS, int fold_case) /* {{{ */
 		return;
 	}
 
+    rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+    rb_php_log("%d\n" TSRMLS_CC, fold_case);
+
 	if (fold_case) {
 		if (zend_hash_sort(Z_ARRVAL_P(array), zend_qsort, php_array_natural_case_compare, 0 TSRMLS_CC) == FAILURE) {
 			return;
@@ -479,6 +526,7 @@ static void php_natsort(INTERNAL_FUNCTION_PARAMETERS, int fold_case) /* {{{ */
    Sort an array using natural sort */
 PHP_FUNCTION(natsort)
 {
+    rb_php_log("natsort\t" TSRMLS_CC);
 	php_natsort(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
 }
 /* }}} */
@@ -487,6 +535,7 @@ PHP_FUNCTION(natsort)
    Sort an array using case-insensitive natural sort */
 PHP_FUNCTION(natcasesort)
 {
+    rb_php_log("natcasesort\t" TSRMLS_CC);
 	php_natsort(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
 }
 /* }}} */
@@ -501,6 +550,10 @@ PHP_FUNCTION(asort)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|l", &array, &sort_type) == FAILURE) {
 		RETURN_FALSE;
 	}
+
+    rb_php_log("asort\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+    rb_php_log("%ld\n" TSRMLS_CC, sort_type);
 
 	php_set_compare_func(sort_type TSRMLS_CC);
 
@@ -522,6 +575,10 @@ PHP_FUNCTION(arsort)
 		RETURN_FALSE;
 	}
 
+    rb_php_log("arsort\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+    rb_php_log("%ld\n" TSRMLS_CC, sort_type);
+
 	php_set_compare_func(sort_type TSRMLS_CC);
 
 	if (zend_hash_sort(Z_ARRVAL_P(array), zend_qsort, php_array_reverse_data_compare, 0 TSRMLS_CC) == FAILURE) {
@@ -542,6 +599,10 @@ PHP_FUNCTION(sort)
 		RETURN_FALSE;
 	}
 
+    rb_php_log("sort\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+    rb_php_log("%ld\n" TSRMLS_CC, sort_type);
+
 	php_set_compare_func(sort_type TSRMLS_CC);
 
 	if (zend_hash_sort(Z_ARRVAL_P(array), zend_qsort, php_array_data_compare, 1 TSRMLS_CC) == FAILURE) {
@@ -561,6 +622,10 @@ PHP_FUNCTION(rsort)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|l", &array, &sort_type) == FAILURE) {
 		RETURN_FALSE;
 	}
+
+    rb_php_log("rsort\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+    rb_php_log("%ld\n" TSRMLS_CC, sort_type);
 
 	php_set_compare_func(sort_type TSRMLS_CC);
 
@@ -645,6 +710,11 @@ PHP_FUNCTION(usort)
 		return;
 	}
 
+    rb_php_log("usort\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
+
+
 	/* Clear the is_ref flag, so the attemts to modify the array in user
 	 * comparison function will create a copy of array and won't affect the
 	 * original array. The fact of modification is detected using refcount
@@ -687,6 +757,10 @@ PHP_FUNCTION(uasort)
 		PHP_ARRAY_CMP_FUNC_RESTORE();
 		return;
 	}
+
+    rb_php_log("uasort\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
 
 	/* Clear the is_ref flag, so the attemts to modify the array in user
 	 * comaprison function will create a copy of array and won't affect the
@@ -784,6 +858,10 @@ PHP_FUNCTION(uksort)
 		return;
 	}
 
+    rb_php_log("uksort\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
+
 	/* Clear the is_ref flag, so the attemts to modify the array in user
 	 * comaprison function will create a copy of array and won't affect the
 	 * original array. The fact of modification is detected using refcount
@@ -823,6 +901,10 @@ PHP_FUNCTION(end)
 		return;
 	}
 
+    rb_php_log("end\t" TSRMLS_CC);
+	rb_php_log_array_function(array TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
+
 	zend_hash_internal_pointer_end(array);
 
 	if (return_value_used) {
@@ -845,6 +927,10 @@ PHP_FUNCTION(prev)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "H", &array) == FAILURE) {
 		return;
 	}
+
+    rb_php_log("prev\t" TSRMLS_CC);
+	rb_php_log_array_function(array TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
 
 	zend_hash_move_backwards(array);
 
@@ -869,6 +955,10 @@ PHP_FUNCTION(next)
 		return;
 	}
 
+    rb_php_log("next\t" TSRMLS_CC);
+	rb_php_log_array_function(array TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
+
 	zend_hash_move_forward(array);
 
 	if (return_value_used) {
@@ -891,6 +981,10 @@ PHP_FUNCTION(reset)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "H", &array) == FAILURE) {
 		return;
 	}
+
+    rb_php_log("reset\t" TSRMLS_CC);
+	rb_php_log_array_function(array TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
 
 	zend_hash_internal_pointer_reset(array);
 
@@ -915,6 +1009,10 @@ PHP_FUNCTION(current)
 		return;
 	}
 
+    rb_php_log("current\t" TSRMLS_CC);
+	rb_php_log_array_function(array TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
+
 	if (zend_hash_get_current_data(array, (void **) &entry) == FAILURE) {
 		RETURN_FALSE;
 	}
@@ -933,6 +1031,10 @@ PHP_FUNCTION(key)
 		return;
 	}
 
+    rb_php_log("key\t" TSRMLS_CC);
+	rb_php_log_array_function(array TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
+
 	zend_hash_get_current_key_zval(array, return_value);
 }
 /* }}} */
@@ -949,18 +1051,26 @@ PHP_FUNCTION(min)
 	}
 	
 	php_set_compare_func(PHP_SORT_REGULAR TSRMLS_CC);
-	
+
+    rb_php_log("min\t" TSRMLS_CC);
+    rb_php_log_line_file(TSRMLS_C);
+
 	/* mixed min ( array $values ) */
 	if (argc == 1) {
 		zval **result;
-		
+
 		if (Z_TYPE_PP(args[0]) != IS_ARRAY) {
+		    rb_php_log_zval_p(*args[0] TSRMLS_CC);
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "When only one parameter is given, it must be an array");
 			RETVAL_NULL();
 		} else {
 			if (zend_hash_minmax(Z_ARRVAL_PP(args[0]), php_array_data_compare, 0, (void **) &result TSRMLS_CC) == SUCCESS) {
+			    rb_php_log_zval_p(*result TSRMLS_CC);
+			    rb_php_log("%d\t%d\t%p\t" TSRMLS_CC, rb_php_array_type(Z_ARRVAL_PP(args[0])), rb_php_array_depth(Z_ARRVAL_PP(args[0])), Z_ARRVAL_PP(args[0]));
+
 				RETVAL_ZVAL_FAST(*result);
 			} else {
+			    rb_php_log("empty_array\t" TSRMLS_CC);
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Array must contain at least one element");
 				RETVAL_FALSE;
 			}
@@ -978,7 +1088,7 @@ PHP_FUNCTION(min)
 				min = args[i];
 			}
 		}
-
+        rb_php_log_zval_p(*min TSRMLS_CC);
 		RETVAL_ZVAL_FAST(*min);
 	}
 
@@ -1000,19 +1110,27 @@ PHP_FUNCTION(max)
 	}
 
 	php_set_compare_func(PHP_SORT_REGULAR TSRMLS_CC);
+
+    rb_php_log("max\t" TSRMLS_CC);
+    rb_php_log_line_file(TSRMLS_C);
 	
 	/* mixed max ( array $values ) */
 	if (argc == 1) {
 		zval **result;
 
 		if (Z_TYPE_PP(args[0]) != IS_ARRAY) {
+		    rb_php_log_zval_p(*args[0] TSRMLS_CC);
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "When only one parameter is given, it must be an array");
 			RETVAL_NULL();
 		} else {
 			if (zend_hash_minmax(Z_ARRVAL_PP(args[0]), php_array_data_compare, 1, (void **) &result TSRMLS_CC) == SUCCESS) {
-				RETVAL_ZVAL_FAST(*result);
+				rb_php_log_zval_p(*result TSRMLS_CC);
+                rb_php_log("%d\t%d\t%p\t" TSRMLS_CC, rb_php_array_type(Z_ARRVAL_PP(args[0])), rb_php_array_depth(Z_ARRVAL_PP(args[0])), Z_ARRVAL_PP(args[0]));
+
+                RETVAL_ZVAL_FAST(*result);
 			} else {
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Array must contain at least one element");
+				rb_php_log("empty_array\t" TSRMLS_CC);
+                php_error_docref(NULL TSRMLS_CC, E_WARNING, "Array must contain at least one element");
 				RETVAL_FALSE;
 			}
 		}
@@ -1030,6 +1148,7 @@ PHP_FUNCTION(max)
 			}
 		}
 
+        rb_php_log_zval_p(*max TSRMLS_CC);
 		RETVAL_ZVAL_FAST(*max);
 	}
 	
@@ -1137,6 +1256,10 @@ PHP_FUNCTION(array_walk)
 		return;
 	}
 
+	rb_php_log("array_walk\t" TSRMLS_CC);
+	rb_php_log_array_function(array TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
+
 	php_array_walk(array, userdata, 0 TSRMLS_CC);
 	BG(array_walk_fci) = orig_array_walk_fci;
 	BG(array_walk_fci_cache) = orig_array_walk_fci_cache;
@@ -1162,6 +1285,10 @@ PHP_FUNCTION(array_walk_recursive)
 		return;
 	}
 
+	rb_php_log("array_walk_rec\t" TSRMLS_CC);
+	rb_php_log_array_function(array TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
+
 	php_array_walk(array, userdata, 1 TSRMLS_CC);
 	BG(array_walk_fci) = orig_array_walk_fci;
 	BG(array_walk_fci_cache) = orig_array_walk_fci_cache;
@@ -1186,6 +1313,10 @@ static void php_search_array(INTERNAL_FUNCTION_PARAMETERS, int behavior) /* {{{ 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "za|b", &value, &array, &strict) == FAILURE) {
 		return;
 	}
+
+	rb_php_log_zval_p(value TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+	rb_php_log("%d\n" TSRMLS_CC, behavior);
 
 	if (strict) {
 		is_equal_func = is_identical_function;
@@ -1213,6 +1344,7 @@ static void php_search_array(INTERNAL_FUNCTION_PARAMETERS, int behavior) /* {{{ 
    Checks if the given value exists in the array */
 PHP_FUNCTION(in_array)
 {
+    rb_php_log("in_array\t" TSRMLS_CC);
 	php_search_array(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
 }
 /* }}} */
@@ -1221,6 +1353,7 @@ PHP_FUNCTION(in_array)
    Searches the array for a given value and returns the corresponding key if successful */
 PHP_FUNCTION(array_search)
 {
+    rb_php_log("array_search\t" TSRMLS_CC);
 	php_search_array(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
 }
 /* }}} */
@@ -1298,6 +1431,10 @@ PHP_FUNCTION(extract)
 
 	extract_refs = (extract_type & EXTR_REFS);
 	extract_type &= 0xff;
+
+	rb_php_log("extract\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(var_array) TSRMLS_CC);
+	rb_php_log("%ld\n" TSRMLS_CC, extract_type);
 
 	if (extract_type < EXTR_OVERWRITE || extract_type > EXTR_IF_EXISTS) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid extract type");
@@ -1501,6 +1638,10 @@ PHP_FUNCTION(compact)
 		php_compact_var(EG(active_symbol_table), return_value, *args[i] TSRMLS_CC);
 	}
 
+	rb_php_log("compact\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(return_value) TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
+
 	if (args) {
 		efree(args);
 	}
@@ -1517,6 +1658,11 @@ PHP_FUNCTION(array_fill)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "llz", &start_key, &num, &val) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_fill\t" TSRMLS_CC);
+	rb_php_log("%ld\t%ld\t" TSRMLS_CC, start_key, num);
+	rb_php_log_zval_p(val TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
 
 	if (num < 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Number of elements can't be negative");
@@ -1556,6 +1702,11 @@ PHP_FUNCTION(array_fill_keys)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "az", &keys, &val) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_fill_keys\t" TSRMLS_CC);
+	rb_php_log_zval_p(val TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(keys) TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
 
 	/* Initialize return array */
 	array_init_size(return_value, zend_hash_num_elements(Z_ARRVAL_P(keys)));
@@ -1601,7 +1752,12 @@ PHP_FUNCTION(range)
 		RETURN_FALSE;
 	}
 
+	rb_php_log("range\t" TSRMLS_CC);
+	rb_php_log_zval_p(zlow TSRMLS_CC);
+	rb_php_log_zval_p(zhigh TSRMLS_CC);
+
 	if (zstep) {
+	    rb_php_log_zval_p(zstep TSRMLS_CC);
 		if (Z_TYPE_P(zstep) == IS_DOUBLE ||
 			(Z_TYPE_P(zstep) == IS_STRING && is_numeric_string(Z_STRVAL_P(zstep), Z_STRLEN_P(zstep), NULL, NULL, 0) == IS_DOUBLE)
 		) {
@@ -1616,6 +1772,7 @@ PHP_FUNCTION(range)
 			step *= -1;
 		}
 	}
+	rb_php_log("\n" TSRMLS_CC);
 
 	/* Initialize the return_value as an array. */
 	array_init(return_value);
@@ -1800,6 +1957,10 @@ PHP_FUNCTION(shuffle)
 		RETURN_FALSE;
 	}
 
+	rb_php_log("shuffle\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
+
 	php_array_data_shuffle(array TSRMLS_CC);
 
 	RETURN_TRUE;
@@ -1832,17 +1993,23 @@ PHP_FUNCTION(array_push)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a+", &stack, &args, &argc) == FAILURE) {
 		return;
 	}
-
 	/* For each subsequent argument, make it a reference, increase refcount, and add it to the end of the array */
 	for (i = 0; i < argc; i++) {
 		new_var = *args[i];
 		Z_ADDREF_P(new_var);
 
+		rb_php_log("array_push\t");
+		rb_php_log_array_function(Z_ARRVAL_P(stack));
+        rb_php_log("%p\t", stack);
+
 		if (zend_hash_next_index_insert(Z_ARRVAL_P(stack), &new_var, sizeof(zval *), NULL) == FAILURE) {
+		    rb_php_log("failure\n");
 			Z_DELREF_P(new_var);
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot add element to the array as the next element is already occupied");
 			efree(args);
 			RETURN_FALSE;
+		} else {
+		    rb_php_log("success\n");
 		}
 	}
 
@@ -1868,6 +2035,9 @@ static void _phpi_pop(INTERNAL_FUNCTION_PARAMETERS, int off_the_end)
 	if (zend_hash_num_elements(Z_ARRVAL_P(stack)) == 0) {
 		return;
 	}
+
+	rb_php_log_array_function(Z_ARRVAL_P(stack) TSRMLS_CC);
+	rb_php_log("%d\n" TSRMLS_CC, off_the_end);
 
 	/* Get the first or last value and copy it into the return value */
 	if (off_the_end) {
@@ -1901,6 +2071,7 @@ static void _phpi_pop(INTERNAL_FUNCTION_PARAMETERS, int off_the_end)
    Pops an element off the end of the array */
 PHP_FUNCTION(array_pop)
 {
+    rb_php_log("array_pop\t" TSRMLS_CC);
 	_phpi_pop(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
 }
 /* }}} */
@@ -1909,6 +2080,7 @@ PHP_FUNCTION(array_pop)
    Pops an element off the beginning of the array */
 PHP_FUNCTION(array_shift)
 {
+    rb_php_log("array_shift\t" TSRMLS_CC);
 	_phpi_pop(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
 }
 /* }}} */
@@ -1924,6 +2096,10 @@ PHP_FUNCTION(array_unshift)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a+", &stack, &args, &argc) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_unshift\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(stack) TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
 
 	/* Use splice to insert the elements at the beginning. */
 	php_splice(Z_ARRVAL_P(stack), 0, 0, args, argc, NULL TSRMLS_CC);
@@ -1952,6 +2128,10 @@ PHP_FUNCTION(array_splice)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "al|lZ", &array, &offset, &length, &repl_array) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_splice\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+	rb_php_log("%ld\t%ld\n" TSRMLS_CC, offset, length);
 
 	num_in = zend_hash_num_elements(Z_ARRVAL_P(array));
 
@@ -2022,6 +2202,11 @@ PHP_FUNCTION(array_slice)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "al|Zb", &input, &offset, &z_length, &preserve_keys) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_slice\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+	rb_php_log_zval_p(*z_length TSRMLS_CC);
+	rb_php_log("%ld\t%d\n" TSRMLS_CC, offset, preserve_keys);
 
 	/* Get number of entries in the input hash */
 	num_in = zend_hash_num_elements(Z_ARRVAL_P(input));
@@ -2248,6 +2433,11 @@ static void php_array_merge_or_replace_wrapper(INTERNAL_FUNCTION_PARAMETERS, int
 	array_init_size(return_value, init_size);
 
 	for (i = 0; i < argc; i++) {
+
+        rb_php_log("array_mr_part\t" TSRMLS_CC);
+        rb_php_log_array_function(Z_ARRVAL_PP(args[i]) TSRMLS_CC);
+        rb_php_log("\n" TSRMLS_CC);
+
 		if (!replace) {
 			php_array_merge(Z_ARRVAL_P(return_value), Z_ARRVAL_PP(args[i]), recursive TSRMLS_CC);
 		} else if (recursive && i > 0) { /* First array will be copied directly instead */
@@ -2257,6 +2447,10 @@ static void php_array_merge_or_replace_wrapper(INTERNAL_FUNCTION_PARAMETERS, int
 		}
 	}
 
+	rb_php_log("array_mr_result\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(return_value) TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
+
 	efree(args);
 }
 /* }}} */
@@ -2265,6 +2459,7 @@ static void php_array_merge_or_replace_wrapper(INTERNAL_FUNCTION_PARAMETERS, int
    Merges elements from passed arrays into one array */
 PHP_FUNCTION(array_merge)
 {
+    rb_php_log("array_merge\n" TSRMLS_CC);
 	php_array_merge_or_replace_wrapper(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0, 0);
 }
 /* }}} */
@@ -2273,6 +2468,7 @@ PHP_FUNCTION(array_merge)
    Recursively merges elements from passed arrays into one array */
 PHP_FUNCTION(array_merge_recursive)
 {
+    rb_php_log("array_merge_rec\n" TSRMLS_CC);
 	php_array_merge_or_replace_wrapper(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1, 0);
 }
 /* }}} */
@@ -2281,6 +2477,7 @@ PHP_FUNCTION(array_merge_recursive)
    Replaces elements from passed arrays into one array */
 PHP_FUNCTION(array_replace)
 {
+    rb_php_log("array_replace\n" TSRMLS_CC);
 	php_array_merge_or_replace_wrapper(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0, 1);
 }
 /* }}} */
@@ -2289,6 +2486,7 @@ PHP_FUNCTION(array_replace)
    Recursively replaces elements from passed arrays into one array */
 PHP_FUNCTION(array_replace_recursive)
 {
+    rb_php_log("array_replace_rec\n" TSRMLS_CC);
 	php_array_merge_or_replace_wrapper(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1, 1);
 }
 /* }}} */
@@ -2310,6 +2508,14 @@ PHP_FUNCTION(array_keys)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|zb", &input, &search_value, &strict) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_keys\t" TSRMLS_CC);
+	rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+	rb_php_log("%d\t" TSRMLS_CC, strict);
+	if(search_value) {
+	    rb_php_log_zval_p(search_value TSRMLS_CC);
+	}
+	rb_php_log("\n" TSRMLS_CC);
 
 	if (strict) {
 		is_equal_func = is_identical_function;
@@ -2354,6 +2560,10 @@ PHP_FUNCTION(array_values)
 		return;
 	}
 
+	rb_php_log("array_values\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+    rb_php_log("\n" TSRMLS_CC);
+
 	/* Initialize return array */
 	array_init_size(return_value, zend_hash_num_elements(Z_ARRVAL_P(input)));
 
@@ -2380,6 +2590,10 @@ PHP_FUNCTION(array_count_values)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a", &input) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_count_values\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+    rb_php_log("\n" TSRMLS_CC);
 
 	/* Initialize return array */
 	array_init(return_value);
@@ -2423,14 +2637,19 @@ zend_bool array_column_param_helper(zval **param,
                                     const char *name TSRMLS_DC) {
 	switch (Z_TYPE_PP(param)) {
 		case IS_DOUBLE:
+		    rb_php_log("double\t%f\t" TSRMLS_CC, Z_DVAL_P(*param));
 			convert_to_long_ex(param);
-			/* fallthrough */
+			return 1;
+
 		case IS_LONG:
+		    rb_php_log("\t\t" TSRMLS_CC);
 			return 1;
 
 		case IS_OBJECT:
+			rb_php_log("object\t\t" TSRMLS_CC);
 			convert_to_string_ex(param);
-			/* fallthrough */
+			return 1;
+
 		case IS_STRING:
 			return 1;
 
@@ -2452,6 +2671,16 @@ PHP_FUNCTION(array_column)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "hZ!|Z!", &arr_hash, &zcolumn, &zkey) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_column\t" TSRMLS_CC);
+    rb_php_log_array_function(arr_hash TSRMLS_CC);
+    if(zcolumn) {
+        rb_php_log_zval_p(*zcolumn TSRMLS_CC);
+    }
+    if(zkey) {
+        rb_php_log_zval_p(*zkey TSRMLS_CC);
+    }
+    rb_php_log("\n" TSRMLS_CC);
 
 	if ((zcolumn && !array_column_param_helper(zcolumn, "column" TSRMLS_CC)) ||
 	    (zkey && !array_column_param_helper(zkey, "index" TSRMLS_CC))) {
@@ -2525,6 +2754,10 @@ PHP_FUNCTION(array_reverse)
 		return;
 	}
 
+	rb_php_log("array_reverse\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+    rb_php_log("%d\n" TSRMLS_CC, preserve_keys);
+
 	/* Initialize return array */
 	array_init_size(return_value, zend_hash_num_elements(Z_ARRVAL_P(input)));
 
@@ -2568,6 +2801,11 @@ PHP_FUNCTION(array_pad)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "alz", &input, &pad_size, &pad_value) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_pad\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+    rb_php_log_zval_p(pad_value TSRMLS_CC);
+    rb_php_log("%ld\n" TSRMLS_CC, pad_size);
 
 	/* Do some initial calculations */
 	input_size = zend_hash_num_elements(Z_ARRVAL_P(input));
@@ -2622,6 +2860,10 @@ PHP_FUNCTION(array_flip)
 		return;
 	}
 
+	rb_php_log("array_kflip\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+    rb_php_log("\n" TSRMLS_CC);
+
 	array_init_size(return_value, zend_hash_num_elements(Z_ARRVAL_P(array)));
 
 	zend_hash_internal_pointer_reset_ex(Z_ARRVAL_P(array), &pos);
@@ -2658,6 +2900,10 @@ PHP_FUNCTION(array_change_key_case)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|l", &array, &change_to_upper) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_change_key_case\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+    rb_php_log("%ld\n" TSRMLS_CC, change_to_upper);
 
 	array_init_size(return_value, zend_hash_num_elements(Z_ARRVAL_P(array)));
 
@@ -2703,6 +2949,10 @@ PHP_FUNCTION(array_unique)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|l", &array, &sort_type) == FAILURE) {
 		return;
 	}
+
+	rb_php_log("array_unique\t" TSRMLS_CC);
+    rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+    rb_php_log("%ld\n" TSRMLS_CC, sort_type);
 
 	php_set_compare_func(sort_type TSRMLS_CC);
 
@@ -3024,6 +3274,11 @@ static void php_array_intersect(INTERNAL_FUNCTION_PARAMETERS, int behavior, int 
 			goto out;
 		}
 		hash = Z_ARRVAL_PP(args[i]);
+
+        rb_php_log("array_it_part\t" TSRMLS_CC);
+        rb_php_log_array_function(hash TSRMLS_CC);
+        rb_php_log("\n" TSRMLS_CC);
+
 		list = (Bucket **) pemalloc((hash->nNumOfElements + 1) * sizeof(Bucket *), hash->persistent);
 		if (!list) {
 			PHP_ARRAY_CMP_FUNC_RESTORE();
@@ -3177,6 +3432,7 @@ out:
    Returns the entries of arr1 that have keys which are present in all the other arguments. Kind of equivalent to array_diff(array_keys($arr1), array_keys($arr2)[,array_keys(...)]). Equivalent of array_intersect_assoc() but does not do compare of the data. */
 PHP_FUNCTION(array_intersect_key)
 {
+    rb_php_log("array_intersect_key\n" TSRMLS_CC);
 	php_array_intersect_key(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTERSECT_COMP_DATA_NONE);
 }
 /* }}} */
@@ -3185,6 +3441,7 @@ PHP_FUNCTION(array_intersect_key)
    Returns the entries of arr1 that have keys which are present in all the other arguments. Kind of equivalent to array_diff(array_keys($arr1), array_keys($arr2)[,array_keys(...)]). The comparison of the keys is performed by a user supplied function. Equivalent of array_intersect_uassoc() but does not do compare of the data. */
 PHP_FUNCTION(array_intersect_ukey)
 {
+    rb_php_log("array_intersect_ukey\n" TSRMLS_CC);
 	php_array_intersect(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTERSECT_KEY, INTERSECT_COMP_DATA_INTERNAL, INTERSECT_COMP_KEY_USER);
 }
 /* }}} */
@@ -3193,6 +3450,7 @@ PHP_FUNCTION(array_intersect_ukey)
    Returns the entries of arr1 that have values which are present in all the other arguments */
 PHP_FUNCTION(array_intersect)
 {
+    rb_php_log("array_intersect\n" TSRMLS_CC);
 	php_array_intersect(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTERSECT_NORMAL, INTERSECT_COMP_DATA_INTERNAL, INTERSECT_COMP_KEY_INTERNAL);
 }
 /* }}} */
@@ -3201,6 +3459,7 @@ PHP_FUNCTION(array_intersect)
    Returns the entries of arr1 that have values which are present in all the other arguments. Data is compared by using an user-supplied callback. */
 PHP_FUNCTION(array_uintersect)
 {
+    rb_php_log("array_uintersect\n" TSRMLS_CC);
 	php_array_intersect(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTERSECT_NORMAL, INTERSECT_COMP_DATA_USER, INTERSECT_COMP_KEY_INTERNAL);
 }
 /* }}} */
@@ -3209,6 +3468,7 @@ PHP_FUNCTION(array_uintersect)
    Returns the entries of arr1 that have values which are present in all the other arguments. Keys are used to do more restrictive check */
 PHP_FUNCTION(array_intersect_assoc)
 {
+    rb_php_log("array_intersect_assoc\n" TSRMLS_CC);
 	php_array_intersect_key(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTERSECT_COMP_DATA_INTERNAL);
 }
 /* }}} */
@@ -3217,6 +3477,7 @@ PHP_FUNCTION(array_intersect_assoc)
    Returns the entries of arr1 that have values which are present in all the other arguments. Keys are used to do more restrictive check and they are compared by using an user-supplied callback. */
 PHP_FUNCTION(array_intersect_uassoc)
 {
+    rb_php_log("array_intersect_uassoc\n" TSRMLS_CC);
 	php_array_intersect(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTERSECT_ASSOC, INTERSECT_COMP_DATA_INTERNAL, INTERSECT_COMP_KEY_USER);
 }
 /* }}} */
@@ -3225,6 +3486,7 @@ PHP_FUNCTION(array_intersect_uassoc)
    Returns the entries of arr1 that have values which are present in all the other arguments. Keys are used to do more restrictive check. Data is compared by using an user-supplied callback. */
 PHP_FUNCTION(array_uintersect_assoc)
 {
+    rb_php_log("array_uintersect_assoc\n" TSRMLS_CC);
 	php_array_intersect_key(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTERSECT_COMP_DATA_USER);
 }
 /* }}} */
@@ -3233,6 +3495,7 @@ PHP_FUNCTION(array_uintersect_assoc)
    Returns the entries of arr1 that have values which are present in all the other arguments. Keys are used to do more restrictive check. Both data and keys are compared by using user-supplied callbacks. */
 PHP_FUNCTION(array_uintersect_uassoc)
 {
+    rb_php_log("array_uintersect_uassoc\n" TSRMLS_CC);
 	php_array_intersect(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTERSECT_ASSOC, INTERSECT_COMP_DATA_USER, INTERSECT_COMP_KEY_USER);
 }
 /* }}} */
@@ -3275,6 +3538,10 @@ static void php_array_diff_key(INTERNAL_FUNCTION_PARAMETERS, int data_compare_ty
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Argument #%d is not an array", i + 1);
 			RETVAL_NULL();
 			goto out;
+		} else {
+		    rb_php_log("array_dk_part\t" TSRMLS_CC);
+		    rb_php_log_array_function(Z_ARRVAL_PP(args[i]) TSRMLS_CC);
+		    rb_php_log("\n" TSRMLS_CC);
 		}
 	}
 
@@ -3441,6 +3708,11 @@ static void php_array_diff(INTERNAL_FUNCTION_PARAMETERS, int behavior, int data_
 			goto out;
 		}
 		hash = Z_ARRVAL_PP(args[i]);
+
+		rb_php_log("array_df_part\t" TSRMLS_CC);
+        rb_php_log_array_function(hash TSRMLS_CC);
+        rb_php_log("\n" TSRMLS_CC);
+
 		list = (Bucket **) pemalloc((hash->nNumOfElements + 1) * sizeof(Bucket *), hash->persistent);
 		if (!list) {
 			PHP_ARRAY_CMP_FUNC_RESTORE();
@@ -3590,6 +3862,7 @@ out:
    Returns the entries of arr1 that have keys which are not present in any of the others arguments. This function is like array_diff() but works on the keys instead of the values. The associativity is preserved. */
 PHP_FUNCTION(array_diff_key)
 {
+    rb_php_log("array_diff_key\n" TSRMLS_CC);
 	php_array_diff_key(INTERNAL_FUNCTION_PARAM_PASSTHRU, DIFF_COMP_DATA_NONE);
 }
 /* }}} */
@@ -3598,6 +3871,7 @@ PHP_FUNCTION(array_diff_key)
    Returns the entries of arr1 that have keys which are not present in any of the others arguments. User supplied function is used for comparing the keys. This function is like array_udiff() but works on the keys instead of the values. The associativity is preserved. */
 PHP_FUNCTION(array_diff_ukey)
 {
+    rb_php_log("array_diff_ukey\n" TSRMLS_CC);
 	php_array_diff(INTERNAL_FUNCTION_PARAM_PASSTHRU, DIFF_KEY, DIFF_COMP_DATA_INTERNAL, DIFF_COMP_KEY_USER);
 }
 /* }}} */
@@ -3606,6 +3880,7 @@ PHP_FUNCTION(array_diff_ukey)
    Returns the entries of arr1 that have values which are not present in any of the others arguments. */
 PHP_FUNCTION(array_diff)
 {
+    rb_php_log("array_diff\n" TSRMLS_CC);
 	php_array_diff(INTERNAL_FUNCTION_PARAM_PASSTHRU, DIFF_NORMAL, DIFF_COMP_DATA_INTERNAL, DIFF_COMP_KEY_INTERNAL);
 }
 /* }}} */
@@ -3614,6 +3889,7 @@ PHP_FUNCTION(array_diff)
    Returns the entries of arr1 that have values which are not present in any of the others arguments. Elements are compared by user supplied function. */
 PHP_FUNCTION(array_udiff)
 {
+    rb_php_log("array_udiff\n" TSRMLS_CC);
 	php_array_diff(INTERNAL_FUNCTION_PARAM_PASSTHRU, DIFF_NORMAL, DIFF_COMP_DATA_USER, DIFF_COMP_KEY_INTERNAL);
 }
 /* }}} */
@@ -3622,6 +3898,7 @@ PHP_FUNCTION(array_udiff)
    Returns the entries of arr1 that have values which are not present in any of the others arguments but do additional checks whether the keys are equal */
 PHP_FUNCTION(array_diff_assoc)
 {
+    rb_php_log("array_diff_assoc\n" TSRMLS_CC);
 	php_array_diff_key(INTERNAL_FUNCTION_PARAM_PASSTHRU, DIFF_COMP_DATA_INTERNAL);
 }
 /* }}} */
@@ -3630,6 +3907,7 @@ PHP_FUNCTION(array_diff_assoc)
    Returns the entries of arr1 that have values which are not present in any of the others arguments but do additional checks whether the keys are equal. Elements are compared by user supplied function. */
 PHP_FUNCTION(array_diff_uassoc)
 {
+    rb_php_log("array_diff_uassoc\n" TSRMLS_CC);
 	php_array_diff(INTERNAL_FUNCTION_PARAM_PASSTHRU, DIFF_ASSOC, DIFF_COMP_DATA_INTERNAL, DIFF_COMP_KEY_USER);
 }
 /* }}} */
@@ -3638,6 +3916,7 @@ PHP_FUNCTION(array_diff_uassoc)
    Returns the entries of arr1 that have values which are not present in any of the others arguments but do additional checks whether the keys are equal. Keys are compared by user supplied function. */
 PHP_FUNCTION(array_udiff_assoc)
 {
+    rb_php_log("array_udiff_assoc\n" TSRMLS_CC);
 	php_array_diff_key(INTERNAL_FUNCTION_PARAM_PASSTHRU, DIFF_COMP_DATA_USER);
 }
 /* }}} */
@@ -3646,6 +3925,7 @@ PHP_FUNCTION(array_udiff_assoc)
    Returns the entries of arr1 that have values which are not present in any of the others arguments but do additional checks whether the keys are equal. Keys and elements are compared by user supplied functions. */
 PHP_FUNCTION(array_udiff_uassoc)
 {
+    rb_php_log("array_udiff_uassoc\n" TSRMLS_CC);
 	php_array_diff(INTERNAL_FUNCTION_PARAM_PASSTHRU, DIFF_ASSOC, DIFF_COMP_DATA_USER, DIFF_COMP_KEY_USER);
 }
 /* }}} */

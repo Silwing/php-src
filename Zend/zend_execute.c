@@ -904,9 +904,9 @@ static inline zval* zend_assign_to_variable(zval **variable_ptr_ptr, zval *value
 	zval *variable_ptr = *variable_ptr_ptr;
 	zval garbage;
 
-	rb_log("assign_var\t");
-	rb_log_line_file();
-	rb_log_zval_p(value);
+	rb_log("assign_var\t" TSRMLS_CC);
+	rb_log_line_file(TSRMLS_C);
+	rb_log_zval_p(value TSRMLS_CC);
     /*if(Z_AST_P(variable_ptr) != NULL) {
 	    fprintf(stderr, "value exists\t");
 		switch(Z_AST_P(variable_ptr)->kind){
@@ -915,7 +915,7 @@ static inline zval* zend_assign_to_variable(zval **variable_ptr_ptr, zval *value
 			fprintf(stderr, "%lu", sizeof(*Z_AST_P(variable_ptr)));
 		}
 	}*/
-	rb_log("\n");
+	rb_log("\n" TSRMLS_CC);
 
 	if (Z_TYPE_P(variable_ptr) == IS_OBJECT &&
 	    UNEXPECTED(Z_OBJ_HANDLER_P(variable_ptr, set) != NULL)) {
@@ -1050,7 +1050,7 @@ static inline zval **zend_fetch_dimension_address_inner(HashTable *ht, const zva
 
 	switch (dim->type) {
 		case IS_NULL:
-		    rb_log("null\t\t0\n");
+		    rb_log("null\t\t0\n"TSRMLS_CC);
 			offset_key = "";
 			offset_key_length = 0;
 			hval = zend_inline_hash_func("", 1);
@@ -1061,7 +1061,7 @@ static inline zval **zend_fetch_dimension_address_inner(HashTable *ht, const zva
 			offset_key = dim->value.str.val;
 			offset_key_length = dim->value.str.len;
 
-		    rb_log("string\t%s\t%d\n", offset_key, offset_key_length);
+		    rb_log("string\t%s\t%d\n" TSRMLS_CC, offset_key, offset_key_length);
 
 			if (dim_type == IS_CONST) {
 				hval = Z_HASH_P(dim);
@@ -1094,21 +1094,21 @@ fetch_string_dim:
 			break;
 		case IS_DOUBLE:
 			hval = zend_dval_to_lval(Z_DVAL_P(dim));
-			rb_log("double\t");
+			rb_log("double\t" TSRMLS_CC);
 			goto num_index;
 		case IS_RESOURCE:
-		    rb_log("resource\t");
+		    rb_log("resource\t" TSRMLS_CC);
 			zend_error(E_STRICT, "Resource ID#%ld used as offset, casting to integer (%ld)", Z_LVAL_P(dim), Z_LVAL_P(dim));
 			/* Fall Through */
 		case IS_BOOL:
-		    rb_log("bool\t");
+		    rb_log("bool\t" TSRMLS_CC);
 			hval = Z_LVAL_P(dim);
 			goto num_index;
 		case IS_LONG:
-		    rb_log("long\t");
+		    rb_log("long\t" TSRMLS_CC);
 			hval = Z_LVAL_P(dim);
 num_index:
-            rb_log("%lu\t\n", hval);
+            rb_log("%lu\t\n" TSRMLS_CC, hval);
 			if (zend_hash_index_find(ht, hval, (void **) &retval) == FAILURE) {
 				switch (type) {
 					case BP_VAR_R:
@@ -1154,11 +1154,8 @@ static void zend_fetch_dimension_address(temp_variable *result, zval **container
 			}
 fetch_from_array:
 			if (dim == NULL) {
-			    rb_log("array_append\t");
-			    rb_log_line_file();
-                rb_log("%d\t", rb_array_type(Z_ARRVAL_P(container)));
-                rb_log("%d\t", rb_array_depth(Z_ARRVAL_P(container)));
-	            rb_log("%p\t", container);
+			    rb_log("array_append\t" TSRMLS_CC);
+			    rb_log_array(Z_ARRVAL_P(container) TSRMLS_CC);
 
 				zval *new_zval = &EG(uninitialized_zval);
 
@@ -1167,16 +1164,13 @@ fetch_from_array:
 					zend_error(E_WARNING, "Cannot add element to the array as the next element is already occupied");
 					retval = &EG(error_zval_ptr);
 					Z_DELREF_P(new_zval);
-					rb_log("failure\n");
+					rb_log("failure\n" TSRMLS_CC);
 				} else {
-				    rb_log("success\n");
+				    rb_log("success\n" TSRMLS_CC);
 				}
 			} else {
-	            rb_log("array_write\t");
-	            rb_log_line_file();
-                rb_log("%d\t", rb_array_type(Z_ARRVAL_P(container)));
-                rb_log("%d\t", rb_array_depth(Z_ARRVAL_P(container)));
-	            rb_log("%p\t", container);
+	            rb_log("array_write\t" TSRMLS_CC);
+	            rb_log_array(Z_ARRVAL_P(container) TSRMLS_CC);
 				retval = zend_fetch_dimension_address_inner(Z_ARRVAL_P(container), dim, dim_type, type TSRMLS_CC);
 			}
 			result->var.ptr_ptr = retval;
@@ -1326,11 +1320,9 @@ static void zend_fetch_dimension_address_read(temp_variable *result, zval *conta
 	switch (Z_TYPE_P(container)) {
 
 		case IS_ARRAY:
-            rb_log("array_read\t");
-            rb_log_line_file();
-            rb_log("%d\t", rb_array_type(Z_ARRVAL_P(container)));
-            rb_log("%d\t", rb_array_depth(Z_ARRVAL_P(container)));
-            rb_log("%p\t", container);
+            rb_log("array_read\t" TSRMLS_CC);
+            rb_log_array(Z_ARRVAL_P(container) TSRMLS_CC);
+
 			retval = zend_fetch_dimension_address_inner(Z_ARRVAL_P(container), dim, dim_type, type TSRMLS_CC);
 			result->var.ptr = *retval;
 			PZVAL_LOCK(*retval);
