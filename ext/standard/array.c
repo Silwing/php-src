@@ -2204,9 +2204,12 @@ PHP_FUNCTION(array_slice)
 	}
 
 	rb_php_log("array_slice\t" TSRMLS_CC);
-	rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
-	rb_php_log_zval_p(*z_length TSRMLS_CC);
-	rb_php_log("%ld\t%d\n" TSRMLS_CC, offset, preserve_keys);
+    rb_php_log_array_function(Z_ARRVAL_P(input) TSRMLS_CC);
+    rb_php_log("%ld\t%d\t" TSRMLS_CC, offset, preserve_keys);
+    if(z_length) {
+        rb_php_log_zval_p(*z_length TSRMLS_CC);
+    }
+    rb_php_log("\n" TSRMLS_CC);
 
 	/* Get number of entries in the input hash */
 	num_in = zend_hash_num_elements(Z_ARRVAL_P(input));
