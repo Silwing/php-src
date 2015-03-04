@@ -522,6 +522,11 @@ static void zend_assign_to_variable_reference(zval **variable_ptr_ptr, zval **va
 	zval *variable_ptr = *variable_ptr_ptr;
 	zval *value_ptr = *value_ptr_ptr;
 
+	rb_log("assign_ref\t" TSRMLS_CC);
+	rb_log_line_file(TSRMLS_C);
+	rb_log_zval_p(value_ptr TSRMLS_CC);
+	rb_log("\n" TSRMLS_CC);
+
 	if (variable_ptr == &EG(error_zval) || value_ptr == &EG(error_zval)) {
 		variable_ptr_ptr = &EG(uninitialized_zval_ptr);
 	} else if (variable_ptr != value_ptr) {
