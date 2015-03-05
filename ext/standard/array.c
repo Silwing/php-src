@@ -166,8 +166,17 @@ PHPAPI void rb_php_log_line_file(TSRMLS_D) {
 }
 
 PHPAPI void rb_php_log_array_function(HashTable *ht TSRMLS_DC) {
+    /*HashTable *copy;
+    ALLOC_HASHTABLE(copy);
+    zend_hash_init(copy, zend_hash_num_elements(ht), NULL, ZVAL_PTR_DTOR, 0);
+    zend_hash_copy(copy, ht, (copy_ctor_func_t) zval_deep_copy, NULL, sizeof(zval *));
+
     rb_php_log_line_file(TSRMLS_C);
     rb_php_log("%d\t%d\t%p\t" TSRMLS_CC, rb_php_array_type(ht), rb_php_array_depth(ht), ht);
+
+    zend_hash_destroy(copy);
+    efree(copy);*/
+    rb_log_array(ht TSRMLS_CC);
 }
 
 static void php_set_compare_func(int sort_type TSRMLS_DC) /* {{{ */
