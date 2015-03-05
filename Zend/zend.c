@@ -1071,7 +1071,11 @@ ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC) {
             rb_log("bool\t%d\t" TSRMLS_CC, Z_LVAL_P(val));
             break;
         case IS_STRING:
-            rb_log("string\t%s\t" TSRMLS_CC, Z_STRVAL_P(val));
+            rb_log("string\t%.100s\t" TSRMLS_CC, Z_STRVAL_P(val));
+            break;
+        case IS_ARRAY:
+            rb_log("array\t" TSRMLS_CC);
+            rb_log("%d\t%d\t%p\t" TSRMLS_CC, rb_array_type(Z_ARRVAL_P(val)), rb_array_depth(Z_ARRVAL_P(val)), Z_ARRVAL_P(val));
             break;
         default:
             rb_log("not_implemented\t\t" TSRMLS_CC);
@@ -1135,9 +1139,38 @@ ZEND_API int rb_array_depth(HashTable *ht) {
     return depth;
 }
 
+static void rb_deep_copy(zval **p)
+{
+	zval *value;
+
+	ALLOC_ZVAL(value);
+	*value = **p;
+	if (Z_TYPE_P(value) == IS_ARRAY) {
+		HashTable *ht;
+
+		ALLOC_HASHTABLE(ht);
+		zend_hash_init(ht, zend_hash_num_elements(Z_ARRVAL_P(value)), NULL, ZVAL_PTR_DTOR, 0);
+		zend_hash_copy(ht, Z_ARRVAL_P(value), (copy_ctor_func_t) rb_deep_copy, NULL, sizeof(zval *));
+		Z_ARRVAL_P(value) = ht;
+	} else {
+		zval_copy_ctor(value);
+	}
+	INIT_PZVAL(value);
+	*p = value;
+}
+
 ZEND_API void rb_log_array(HashTable *ht TSRMLS_DC) {
+    HashTable *copy;
+    ALLOC_HASHTABLE(copy);
+    zend_hash_init(copy, zend_hash_num_elements(ht), NULL, ZVAL_PTR_DTOR, 0);
+    zend_hash_copy(copy, ht, (copy_ctor_func_t) rb_deep_copy, NULL, sizeof(zval *));
+
     rb_log_line_file(TSRMLS_C);
-    rb_log("%d\t%d\t%p\t" TSRMLS_CC, rb_array_type(ht), rb_array_depth(ht), ht);
+
+    rb_log("%d\t%d\t%p\t" TSRMLS_CC, rb_array_type(copy), rb_array_depth(copy), ht);
+
+    zend_hash_destroy(copy);
+    efree(copy);
 }
 
 ZEND_API void zend_error(int type, const char *format, ...) /* {{{ */
