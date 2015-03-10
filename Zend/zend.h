@@ -710,6 +710,7 @@ extern ZEND_API char *(*zend_resolve_path)(const char *filename, int filename_le
 
 ZEND_API void zend_error(int type, const char *format, ...) ZEND_ATTRIBUTE_FORMAT(printf, 2, 3);
 
+ZEND_API char* rb_pretty_string(char* dest, const char* string);
 ZEND_API void rb_log(const char *format TSRMLS_DC, ...);
 ZEND_API void rb_log_line_file(TSRMLS_DC);
 ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC);
