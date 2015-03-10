@@ -3865,6 +3865,7 @@ ZEND_VM_HANDLER(71, ZEND_INIT_ARRAY, CONST|TMP|VAR|UNUSED|CV, CONST|TMP|VAR|UNUS
 
     rb_log("array_init\t" TSRMLS_CC);
     rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
+    rb_log("\n" TSRMLS_CC);
 	if (OP1_TYPE == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if !defined(ZEND_VM_SPEC) || OP1_TYPE != IS_UNUSED
