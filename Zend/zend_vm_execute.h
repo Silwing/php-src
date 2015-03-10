@@ -4126,6 +4126,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_CONST_CONST_HANDLER(ZEND_OPCODE_H
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_CONST == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_CONST != IS_UNUSED
@@ -5037,6 +5040,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_CONST_TMP_HANDLER(ZEND_OPCODE_HAN
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_CONST == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_CONST != IS_UNUSED
@@ -5901,6 +5907,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_CONST_VAR_HANDLER(ZEND_OPCODE_HAN
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_CONST == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_CONST != IS_UNUSED
@@ -6621,6 +6630,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_CONST_UNUSED_HANDLER(ZEND_OPCODE_
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_CONST == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_CONST != IS_UNUSED
@@ -7555,6 +7567,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_CONST_CV_HANDLER(ZEND_OPCODE_HAND
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_CONST == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_CONST != IS_UNUSED
@@ -9455,6 +9470,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_TMP_CONST_HANDLER(ZEND_OPCODE_HAN
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_TMP_VAR == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_TMP_VAR != IS_UNUSED
@@ -10322,6 +10340,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_TMP_TMP_HANDLER(ZEND_OPCODE_HANDL
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_TMP_VAR == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_TMP_VAR != IS_UNUSED
@@ -11188,6 +11209,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_TMP_VAR_HANDLER(ZEND_OPCODE_HANDL
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_TMP_VAR == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_TMP_VAR != IS_UNUSED
@@ -11783,6 +11807,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_TMP_UNUSED_HANDLER(ZEND_OPCODE_HA
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_TMP_VAR == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_TMP_VAR != IS_UNUSED
@@ -12632,6 +12659,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_TMP_CV_HANDLER(ZEND_OPCODE_HANDLE
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_TMP_VAR == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_TMP_VAR != IS_UNUSED
@@ -16088,6 +16118,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_VAR_CONST_HANDLER(ZEND_OPCODE_HAN
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_VAR == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_VAR != IS_UNUSED
@@ -18341,6 +18374,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_VAR_TMP_HANDLER(ZEND_OPCODE_HANDL
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_VAR == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_VAR != IS_UNUSED
@@ -20648,6 +20684,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_VAR_VAR_HANDLER(ZEND_OPCODE_HANDL
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_VAR == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_VAR != IS_UNUSED
@@ -22079,6 +22118,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_VAR_UNUSED_HANDLER(ZEND_OPCODE_HA
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_VAR == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_VAR != IS_UNUSED
@@ -24103,6 +24145,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_VAR_CV_HANDLER(ZEND_OPCODE_HANDLE
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_VAR == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_VAR != IS_UNUSED
@@ -25616,6 +25661,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_UNUSED_CONST_HANDLER(ZEND_OPCODE_
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_UNUSED == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_UNUSED != IS_UNUSED
@@ -26930,6 +26978,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_UNUSED_TMP_HANDLER(ZEND_OPCODE_HA
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_UNUSED == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_UNUSED != IS_UNUSED
@@ -28244,6 +28295,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_UNUSED_VAR_HANDLER(ZEND_OPCODE_HA
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_UNUSED == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_UNUSED != IS_UNUSED
@@ -28954,6 +29008,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_UNUSED_UNUSED_HANDLER(ZEND_OPCODE
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_UNUSED == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_UNUSED != IS_UNUSED
@@ -29985,6 +30042,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_UNUSED_CV_HANDLER(ZEND_OPCODE_HAN
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_UNUSED == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_UNUSED != IS_UNUSED
@@ -33319,6 +33379,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_CV_CONST_HANDLER(ZEND_OPCODE_HAND
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_CV == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_CV != IS_UNUSED
@@ -35433,6 +35496,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_CV_TMP_HANDLER(ZEND_OPCODE_HANDLE
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_CV == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_CV != IS_UNUSED
@@ -37600,6 +37666,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_CV_VAR_HANDLER(ZEND_OPCODE_HANDLE
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_CV == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_CV != IS_UNUSED
@@ -38899,6 +38968,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_CV_UNUSED_HANDLER(ZEND_OPCODE_HAN
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_CV == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_CV != IS_UNUSED
@@ -40766,6 +40838,9 @@ static int ZEND_FASTCALL  ZEND_INIT_ARRAY_SPEC_CV_CV_HANDLER(ZEND_OPCODE_HANDLER
 	USE_OPLINE
 
 	array_init(&EX_T(opline->result.var).tmp_var);
+
+    rb_log("array_init\t" TSRMLS_CC);
+    rb_log_array(Z_ARRVAL_P(&EX_T(opline->result.var).tmp_var) TSRMLS_CC);
 	if (IS_CV == IS_UNUSED) {
 		ZEND_VM_NEXT_OPCODE();
 #if 0 || IS_CV != IS_UNUSED
