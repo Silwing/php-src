@@ -524,6 +524,7 @@ static void zend_assign_to_variable_reference(zval **variable_ptr_ptr, zval **va
 
 	rb_log("assign_ref\t" TSRMLS_CC);
 	rb_log_line_file(TSRMLS_C);
+    rb_log_zval_p(variable_ptr TSRMLS_CC);
 	rb_log_zval_p(value_ptr TSRMLS_CC);
 	rb_log("\n" TSRMLS_CC);
 
@@ -842,6 +843,7 @@ static inline zval* zend_assign_tmp_to_variable(zval **variable_ptr_ptr, zval *v
 
 	rb_log("assign_tmp\t" TSRMLS_CC);
     rb_log_line_file(TSRMLS_C);
+    rb_log_zval_p(variable_ptr TSRMLS_CC);
     rb_log_zval_p(value TSRMLS_CC);
     rb_log("\n" TSRMLS_CC);
 
@@ -880,6 +882,7 @@ static inline zval* zend_assign_const_to_variable(zval **variable_ptr_ptr, zval 
 
 	rb_log("assign_const\t" TSRMLS_CC);
     rb_log_line_file(TSRMLS_C);
+    rb_log_zval_p(variable_ptr TSRMLS_CC);
     rb_log_zval_p(value TSRMLS_CC);
     rb_log("\n" TSRMLS_CC);
 
