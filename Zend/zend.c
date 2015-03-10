@@ -1056,7 +1056,64 @@ ZEND_API void rb_log_line_file(TSRMLS_D) {
     rb_log("%d\t%s\t" TSRMLS_CC, error_lineno, error_filename);
 }
 
+ZEND_API char* rb_pretty_string(char* dest, const char* source){
+
+	char c; 
+
+	
+	while (c = *(source ++)) {
+    switch(c) {
+      case '\a': 
+        *(dest++) = '\\';
+        *(dest++) = 'a';
+        break;
+      case '\b': 
+        *(dest++) = '\\';
+        *(dest++) = 'b';
+        break;
+      case '\t': 
+        *(dest++) = '\\';
+        *(dest++) = 't';
+        break;
+      case '\n': 
+        *(dest++) = '\\';
+        *(dest++) = 'n';
+        break;
+      case '\v': 
+        *(dest++) = '\\';
+        *(dest++) = 'v';
+        break;
+      case '\f': 
+        *(dest++) = '\\';
+        *(dest++) = 'f';
+        break;
+      case '\r': 
+        *(dest++) = '\\';
+        *(dest++) = 'r';
+        break;
+      case '\\': 
+        *(dest++) = '\\';
+        *(dest++) = '\\';
+        break;
+      case '\"': 
+        *(dest++) = '\\';
+        *(dest++) = '\"';
+        break;
+      default:
+        *(dest++) = c;
+     }
+  }
+
+  *dest = '\0'; /* Ensure nul terminator */
+
+  return dest;
+
+}
+
+
 ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC) {
+	char *pretty;
+	const char* source;
     switch(Z_TYPE_P(val)) {
         case IS_NULL:
             rb_log("NULL\t\t" TSRMLS_CC);
@@ -1070,8 +1127,12 @@ ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC) {
         case IS_BOOL:
             rb_log("bool\t%d\t" TSRMLS_CC, Z_LVAL_P(val));
             break;
-        case IS_STRING:
-            rb_log("string\t%.100s\t" TSRMLS_CC, Z_STRVAL_P(val));
+        case IS_STRING:	   
+			source = Z_STRVAL_P(val);
+			pretty = malloc(2 * strlen(source) + 1);
+			rb_pretty_string(pretty, source);
+            rb_log("string\t%.100s\t" TSRMLS_CC, pretty);
+			free(pretty);
             break;
         case IS_ARRAY:
             rb_log("array\t" TSRMLS_CC);
@@ -1082,6 +1143,8 @@ ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC) {
             break;
     }
 }
+
+
 static int rb_element_apply_func(zval **zv TSRMLS_DC, int num_args, va_list args, zend_hash_key *hash_key) {
 
     int *lastKey, *currentType;
