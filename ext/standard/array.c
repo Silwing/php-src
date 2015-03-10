@@ -172,6 +172,8 @@ PHPAPI void rb_php_log_array_function(HashTable *ht TSRMLS_DC) {
     zend_hash_copy(copy, ht, (copy_ctor_func_t) zval_deep_copy, NULL, sizeof(zval *));
 
     rb_php_log_line_file(TSRMLS_C);
+
+
     rb_php_log("%d\t%d\t%p\t" TSRMLS_CC, rb_php_array_type(ht), rb_php_array_depth(ht), ht);
 
     zend_hash_destroy(copy);
