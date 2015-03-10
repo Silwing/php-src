@@ -924,6 +924,7 @@ static inline zval* zend_assign_to_variable(zval **variable_ptr_ptr, zval *value
 
 	rb_log("assign_var\t" TSRMLS_CC);
 	rb_log_line_file(TSRMLS_C);
+    rb_log_zval_p(variable_ptr TSRMLS_CC);
 	rb_log_zval_p(value TSRMLS_CC);
 	rb_log("\n" TSRMLS_CC);
 

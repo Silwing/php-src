@@ -1141,7 +1141,7 @@ ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC) {
             break;
         case IS_ARRAY:
             rb_log("array\t" TSRMLS_CC);
-            rb_log("%d\t%d\t%p\t" TSRMLS_CC, rb_array_type(Z_ARRVAL_P(val)), rb_array_depth(Z_ARRVAL_P(val)), Z_ARRVAL_P(val));
+            rb_log("%d\t%d\t%d\t%p\t" TSRMLS_CC, rb_array_type(Z_ARRVAL_P(val)), rb_array_depth(Z_ARRVAL_P(val)), zend_hash_num_elements(Z_ARRVAL_P(val)), Z_ARRVAL_P(val));
             break;
         default:
             rb_log("not_implemented\t\t" TSRMLS_CC);
@@ -1217,7 +1217,7 @@ ZEND_API void rb_log_array(HashTable *ht TSRMLS_DC) {
     }
 
     rb_log_line_file(TSRMLS_C);
-	 rb_log("%d\t%d\t%p\t" TSRMLS_CC, rb_array_type(ht), rb_array_depth(ht), ht);
+	 rb_log("%d\t%d\t%d\t%p\t" TSRMLS_CC, rb_array_type(ht), rb_array_depth(ht), zend_hash_num_elements(ht), ht);
 }
 
 ZEND_API void zend_error(int type, const char *format, ...) /* {{{ */

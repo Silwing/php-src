@@ -1325,8 +1325,8 @@ static void php_search_array(INTERNAL_FUNCTION_PARAMETERS, int behavior) /* {{{ 
 		return;
 	}
 
-	rb_php_log_zval_p(value TSRMLS_CC);
 	rb_php_log_array_function(Z_ARRVAL_P(array) TSRMLS_CC);
+	rb_php_log_zval_p(value TSRMLS_CC);
 	rb_php_log("%d\n" TSRMLS_CC, behavior);
 
 	if (strict) {
