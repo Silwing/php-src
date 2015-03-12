@@ -1064,25 +1064,25 @@ PHP_FUNCTION(min)
 	php_set_compare_func(PHP_SORT_REGULAR TSRMLS_CC);
 
     rb_php_log("min\t" TSRMLS_CC);
+    rb_php_log_line_file(TSRMLS_C);
+    rb_php_log_zval_p(*args[0] TSRMLS_CC);
 
 	/* mixed min ( array $values ) */
 	if (argc == 1) {
 		zval **result;
 
 		if (Z_TYPE_PP(args[0]) != IS_ARRAY) {
-            rb_php_log_line_file(TSRMLS_C);
-		    rb_php_log_zval_p(*args[0] TSRMLS_CC);
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "When only one parameter is given, it must be an array");
 			RETVAL_NULL();
+	        rb_php_log_zval_p(return_value TSRMLS_CC);
 		} else {
-		    rb_php_log_array_function(Z_ARRVAL_PP(args[0]) TSRMLS_CC);
 			if (zend_hash_minmax(Z_ARRVAL_PP(args[0]), php_array_data_compare, 0, (void **) &result TSRMLS_CC) == SUCCESS) {
-			    rb_php_log_zval_p(*result TSRMLS_CC);
-
+	            rb_php_log_zval_p(*result TSRMLS_CC);
 				RETVAL_ZVAL_FAST(*result);
 			} else {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Array must contain at least one element");
 				RETVAL_FALSE;
+				rb_php_log_zval_p(return_value TSRMLS_CC);
 			}
 		}
 	} else {
@@ -1093,14 +1093,17 @@ PHP_FUNCTION(min)
 		min = args[0];
 
 		for (i = 1; i < argc; i++) {
+		    rb_php_log_zval_p(*args[i] TSRMLS_CC);
 			is_smaller_function(&result, *args[i], *min TSRMLS_CC);
 			if (Z_LVAL(result) == 1) {
 				min = args[i];
 			}
 		}
-        rb_php_log_zval_p(*min TSRMLS_CC);
+	    rb_php_log_zval_p(*min TSRMLS_CC);
 		RETVAL_ZVAL_FAST(*min);
 	}
+
+	rb_php_log("\n" TSRMLS_CC);
 
 	if (args) {
 		efree(args);
@@ -1122,25 +1125,25 @@ PHP_FUNCTION(max)
 	php_set_compare_func(PHP_SORT_REGULAR TSRMLS_CC);
 
     rb_php_log("max\t" TSRMLS_CC);
+    rb_php_log_line_file(TSRMLS_C);
+    rb_php_log_zval_p(*args[0] TSRMLS_CC);
 	
 	/* mixed max ( array $values ) */
 	if (argc == 1) {
 		zval **result;
 
 		if (Z_TYPE_PP(args[0]) != IS_ARRAY) {
-            rb_php_log_line_file(TSRMLS_C);
-		    rb_php_log_zval_p(*args[0] TSRMLS_CC);
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "When only one parameter is given, it must be an array");
 			RETVAL_NULL();
+            rb_php_log_zval_p(return_value TSRMLS_CC);
 		} else {
-			rb_php_log_array_function(Z_ARRVAL_PP(args[0]) TSRMLS_CC);
             if (zend_hash_minmax(Z_ARRVAL_PP(args[0]), php_array_data_compare, 1, (void **) &result TSRMLS_CC) == SUCCESS) {
-				rb_php_log_zval_p(*result TSRMLS_CC);
-
+                rb_php_log_zval_p(*result TSRMLS_CC);
                 RETVAL_ZVAL_FAST(*result);
 			} else {
                 php_error_docref(NULL TSRMLS_CC, E_WARNING, "Array must contain at least one element");
 				RETVAL_FALSE;
+				rb_php_log_zval_p(return_value TSRMLS_CC);
 			}
 		}
 	} else {
@@ -1151,16 +1154,19 @@ PHP_FUNCTION(max)
 		max = args[0];
 
 		for (i = 1; i < argc; i++) {
+		    rb_php_log_zval_p(*args[i] TSRMLS_CC);
 			is_smaller_or_equal_function(&result, *args[i], *max TSRMLS_CC);
 			if (Z_LVAL(result) == 0) {
 				max = args[i];
 			}
 		}
 
-        rb_php_log_zval_p(*max TSRMLS_CC);
+	    rb_php_log_zval_p(*max TSRMLS_CC);
 		RETVAL_ZVAL_FAST(*max);
 	}
-	
+
+	rb_php_log("\n" TSRMLS_CC);
+
 	if (args) {
 		efree(args);
 	}
