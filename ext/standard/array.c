@@ -2010,25 +2010,23 @@ PHP_FUNCTION(array_push)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a+", &stack, &args, &argc) == FAILURE) {
 		return;
 	}
+    rb_php_log("array_push\t");
+    rb_php_log_array_function(Z_ARRVAL_P(stack));
 	/* For each subsequent argument, make it a reference, increase refcount, and add it to the end of the array */
 	for (i = 0; i < argc; i++) {
 		new_var = *args[i];
 		Z_ADDREF_P(new_var);
 
-		rb_php_log("array_push\t");
-		rb_php_log_array_function(Z_ARRVAL_P(stack));
-        rb_php_log("%p\t", stack);
+        rb_php_log_zval_p(*args[i] TSRMLS_CC);
 
 		if (zend_hash_next_index_insert(Z_ARRVAL_P(stack), &new_var, sizeof(zval *), NULL) == FAILURE) {
-		    rb_php_log("failure\n");
 			Z_DELREF_P(new_var);
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot add element to the array as the next element is already occupied");
 			efree(args);
 			RETURN_FALSE;
-		} else {
-		    rb_php_log("success\n");
 		}
 	}
+	rb_php_log("\n" TSRMLS_CC);
 
 	/* Clean up and return the number of values in the stack */
 	efree(args);
@@ -2112,7 +2110,8 @@ PHP_FUNCTION(array_unshift)
 {
 	zval ***args,			/* Function arguments array */
 		   *stack;			/* Input stack */
-	int argc;				/* Number of function arguments */
+	int i,
+	    argc;				/* Number of function arguments */
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a+", &stack, &args, &argc) == FAILURE) {
 		return;
@@ -2120,6 +2119,11 @@ PHP_FUNCTION(array_unshift)
 
 	rb_php_log("array_unshift\t" TSRMLS_CC);
 	rb_php_log_array_function(Z_ARRVAL_P(stack) TSRMLS_CC);
+
+	for(i = 0; i < argc; i++) {
+	    rb_php_log_zval_p(*args[i] TSRMLS_CC);
+	}
+
 	rb_php_log("\n" TSRMLS_CC);
 
 	/* Use splice to insert the elements at the beginning. */
