@@ -1114,6 +1114,8 @@ ZEND_API char* rb_pretty_string(char* dest, const char* source){
 ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC) {
 	char *pretty;
 	const char* source;
+    const char *class_name = NULL;
+    zend_uint clen;
     switch(Z_TYPE_P(val)) {
         case IS_NULL:
             rb_log("NULL\t\t\t\t\t" TSRMLS_CC);
@@ -1137,6 +1139,20 @@ ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC) {
         case IS_ARRAY:
             rb_log("array\t" TSRMLS_CC);
             rb_log("%d\t%d\t%d\t%p\t" TSRMLS_CC, rb_array_type(Z_ARRVAL_P(val)), rb_array_depth(Z_ARRVAL_P(val)), zend_hash_num_elements(Z_ARRVAL_P(val)), Z_ARRVAL_P(val));
+            break;
+        case IS_OBJECT:
+            rb_log("object\t" TSRMLS_CC);
+            if (Z_OBJ_HANDLER_P(val, get_class_name)) {
+                Z_OBJ_HANDLER_P(val, get_class_name)(val, &class_name, &clen, 0 TSRMLS_CC);
+            }
+            if (class_name) {
+                rb_log("%s\t\t\t\t" TSRMLS_CC, class_name);
+            } else {
+                rb_log("unknown\t\t\t\t" TSRMLS_CC);
+            }
+            if (class_name) {
+                efree((char*)class_name);
+            }
             break;
         default:
             rb_log("not_implemented\t\t\t\t\t" TSRMLS_CC);
