@@ -1121,22 +1121,22 @@ ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC) {
 	const char* source;
     switch(Z_TYPE_P(val)) {
         case IS_NULL:
-            rb_log("NULL\t\t" TSRMLS_CC);
+            rb_log("NULL\t\t\t\t\t" TSRMLS_CC);
             break;
         case IS_LONG:
-            rb_log("long\t%d\t" TSRMLS_CC, Z_LVAL_P(val));
+            rb_log("long\t%d\t\t\t\t" TSRMLS_CC, Z_LVAL_P(val));
             break;
         case IS_DOUBLE:
-            rb_log("double\t%d\t" TSRMLS_CC, Z_DVAL_P(val));
+            rb_log("double\t%d\t\t\t\t" TSRMLS_CC, Z_DVAL_P(val));
             break;
         case IS_BOOL:
-            rb_log("bool\t%d\t" TSRMLS_CC, Z_LVAL_P(val));
+            rb_log("bool\t%d\t\t\t\t" TSRMLS_CC, Z_LVAL_P(val));
             break;
         case IS_STRING:	   
 			source = Z_STRVAL_P(val);
 			pretty = malloc(2 * strlen(source) + 1);
 			rb_pretty_string(pretty, source);
-            rb_log("string\t%.100s\t" TSRMLS_CC, pretty);
+            rb_log("string\t%.100s\t\t\t\t" TSRMLS_CC, pretty);
 			free(pretty);
             break;
         case IS_ARRAY:
@@ -1144,7 +1144,7 @@ ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC) {
             rb_log("%d\t%d\t%d\t%p\t" TSRMLS_CC, rb_array_type(Z_ARRVAL_P(val)), rb_array_depth(Z_ARRVAL_P(val)), zend_hash_num_elements(Z_ARRVAL_P(val)), Z_ARRVAL_P(val));
             break;
         default:
-            rb_log("not_implemented\t\t" TSRMLS_CC);
+            rb_log("not_implemented\t\t\t\t\t" TSRMLS_CC);
             break;
     }
 }
