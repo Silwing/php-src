@@ -1039,6 +1039,11 @@ ZEND_API void rb_log(const char *format TSRMLS_DC, ...) {
 }
 
 ZEND_API void rb_log_line_file(TSRMLS_D) {
+
+    if(!EG(rb_enable_debug)) {
+        return;
+    }
+
     const char *error_filename;
     uint error_lineno;
     TSRMLS_FETCH();
@@ -1275,6 +1280,9 @@ ZEND_API int rb_depth_and_type(HashTable *ht, int *type, int recursionDepth) {
 }
 
 ZEND_API void rb_log_array(HashTable *ht TSRMLS_DC) {
+    if(!EG(rb_enable_debug)) {
+        return;
+    }
     int type = RB_ARRAY_UNKNOWN;
     int depth = rb_depth_and_type(ht, &type, 0);
 
