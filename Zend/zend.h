@@ -717,7 +717,8 @@ ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC);
 #define RB_ARRAY_UNKNOWN 0
 #define RB_ARRAY_LIST   1
 #define RB_ARRAY_SLIST  2
-#define RB_ARRAY_OBJECT 3
+#define RB_ARRAY_OBJECT 4
+#define RB_ARRAY_CYCLIC 8
 ZEND_API int rb_array_type(HashTable *ht);
 ZEND_API int rb_array_depth(HashTable *ht);
 ZEND_API void rb_log_array(HashTable *ht TSRMLS_DC);
