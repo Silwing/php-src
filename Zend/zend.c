@@ -1115,6 +1115,7 @@ ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC) {
 	char *pretty;
 	const char* source;
     const char *class_name = NULL;
+    int type, depth;
     zend_uint clen;
     switch(Z_TYPE_P(val)) {
         case IS_NULL:
@@ -1138,7 +1139,9 @@ ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC) {
             break;
         case IS_ARRAY:
             rb_log("array\t" TSRMLS_CC);
-            rb_log("%d\t%d\t%d\t%p\t" TSRMLS_CC, rb_array_type(Z_ARRVAL_P(val)), rb_array_depth(Z_ARRVAL_P(val)), zend_hash_num_elements(Z_ARRVAL_P(val)), Z_ARRVAL_P(val));
+            type = RB_ARRAY_UNKNOWN;
+            depth = rb_depth_and_type(Z_ARRVAL_P(val), &type, 0);
+            rb_log("%d\t%d\t%d\t%p\t" TSRMLS_CC, type, depth, zend_hash_num_elements(Z_ARRVAL_P(val)), Z_ARRVAL_P(val));
             break;
         case IS_OBJECT:
             rb_log("object\t" TSRMLS_CC);
@@ -1214,6 +1217,48 @@ static int rb_depth_apply_func(zval **zv TSRMLS_DC, int num_args, va_list args, 
     return ZEND_HASH_APPLY_KEEP;
 }
 
+static int rb_depth_and_type_apply_func(zval **zv TSRMLS_DC, int num_args, va_list args, zend_hash_key *hash_key) {
+    int *currentDepth = va_arg(args, int*);
+    int thisDepth = 1;
+    HashTable *myht;
+    int *lastKey, *currentType;
+    currentType = va_arg(args, int*);
+    int recursionDepth = va_arg(args, int);
+
+    // we only care about key type in first dimension
+    if(recursionDepth == 0) {
+         if(hash_key->nKeyLength == 0) { /* numeric key */
+             lastKey = va_arg(args, int*);
+             if(*currentType == RB_ARRAY_UNKNOWN) {
+                 *currentType = RB_ARRAY_LIST;
+             }
+             if(*currentType == RB_ARRAY_LIST && (++(*lastKey)) != hash_key->h) {
+                 *currentType = (*currentType | RB_ARRAY_SLIST) & ~RB_ARRAY_LIST;
+             }
+         } else {
+             *currentType = (*currentType | RB_ARRAY_OBJECT) & ~RB_ARRAY_LIST & ~RB_ARRAY_SLIST;
+         }
+    }
+
+    if(Z_TYPE_PP(zv) == IS_ARRAY) {
+        myht = Z_ARRVAL_PP(zv);
+        if (++myht->nApplyCount > 1) {
+            --myht->nApplyCount;
+            *currentType |= RB_ARRAY_CYCLIC;
+            return ZEND_HASH_APPLY_KEEP;
+        }
+
+        thisDepth += rb_depth_and_type(myht TSRMLS_CC, currentType, recursionDepth+1);
+        --myht->nApplyCount;
+
+    }
+    if(thisDepth > *currentDepth) {
+        *currentDepth = thisDepth;
+    }
+
+    return ZEND_HASH_APPLY_KEEP;
+ }
+
 ZEND_API int rb_array_depth(HashTable *ht) {
     int depth = 1;
 
@@ -1222,9 +1267,19 @@ ZEND_API int rb_array_depth(HashTable *ht) {
     return depth;
 }
 
+ZEND_API int rb_depth_and_type(HashTable *ht, int *type, int recursionDepth) {
+    int lastKey = -1;
+    int depth = 1;
+    zend_hash_apply_with_arguments(ht TSRMLS_CC, (apply_func_args_t) rb_depth_and_type_apply_func, 4, &depth, type, recursionDepth, &lastKey);
+    return depth;
+}
+
 ZEND_API void rb_log_array(HashTable *ht TSRMLS_DC) {
+    int type = RB_ARRAY_UNKNOWN;
+    int depth = rb_depth_and_type(ht, &type, 0);
+
     rb_log_line_file(TSRMLS_C);
-	 rb_log("%d\t%d\t%d\t%p\t" TSRMLS_CC, rb_array_type(ht), rb_array_depth(ht), zend_hash_num_elements(ht), ht);
+	rb_log("%d\t%d\t%d\t%p\t" TSRMLS_CC, type, depth, zend_hash_num_elements(ht), ht);
 }
 
 ZEND_API void zend_error(int type, const char *format, ...) /* {{{ */
