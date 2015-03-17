@@ -1997,3 +1997,4 @@ ldap.max_links = -1
 
 
 ;rb.enable_debug=1
+;rb.enable_debug_file="/home/vagrant/run_php.csv"

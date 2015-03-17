@@ -712,6 +712,7 @@ ZEND_API void zend_error(int type, const char *format, ...) ZEND_ATTRIBUTE_FORMA
 
 ZEND_API char* rb_pretty_string(char* dest, const char* string);
 ZEND_API void rb_log(const char *format TSRMLS_DC, ...);
+ZEND_API void rb_log_va_list( const char *format, va_list args TSRMLS_DC);
 ZEND_API void rb_log_line_file(TSRMLS_DC);
 ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC);
 #define RB_ARRAY_UNKNOWN 0

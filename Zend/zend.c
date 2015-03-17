@@ -63,6 +63,8 @@ void (*zend_on_timeout)(int seconds TSRMLS_DC);
 static void (*zend_message_dispatcher_p)(long message, const void *data TSRMLS_DC);
 static int (*zend_get_configuration_directive_p)(const char *name, uint name_length, zval *contents);
 
+static FILE* rb_debug_file;
+
 static ZEND_INI_MH(OnUpdateErrorReporting) /* {{{ */
 {
 	if (!new_value) {
@@ -106,6 +108,7 @@ ZEND_INI_BEGIN()
  	ZEND_INI_ENTRY("zend.script_encoding",			NULL,		ZEND_INI_ALL,		OnUpdateScriptEncoding)
  	STD_ZEND_INI_BOOLEAN("zend.detect_unicode",			"1",	ZEND_INI_ALL,		OnUpdateBool, detect_unicode, zend_compiler_globals, compiler_globals)
  	STD_ZEND_INI_BOOLEAN("rb.enable_debug",             "0",    ZEND_INI_ALL,       OnUpdateBool, rb_enable_debug, zend_executor_globals, executor_globals)
+ 	STD_ZEND_INI_ENTRY("rb.enable_debug_file",             "/tmp/rb_debug_file.csv",    ZEND_INI_ALL,       OnUpdateString, rb_enable_debug_file, zend_executor_globals, executor_globals)
 #ifdef ZEND_SIGNALS
 	STD_ZEND_INI_BOOLEAN("zend.signal_check", "0", ZEND_INI_SYSTEM, OnUpdateBool, check, zend_signal_globals_t, zend_signal_globals)
 #endif
@@ -1031,10 +1034,23 @@ ZEND_API int zend_get_configuration_directive(const char *name, uint name_length
 
 ZEND_API void rb_log(const char *format TSRMLS_DC, ...) {
     va_list args;
+    
+		va_start(args, format);	
+		rb_log_va_list(format, args TSRMLS_CC); 
+		va_end(args);
+
+    
+}
+
+ZEND_API void rb_log_va_list(const char *format, va_list args TSRMLS_DC){
     if(EG(rb_enable_debug)) {
-        va_start(args, format);
-        vfprintf(stderr, format, args);
-        va_end(args);
+		
+		if(rb_debug_file == NULL && (rb_debug_file = fopen(EG(rb_enable_debug_file), "w")) == NULL){
+			return;
+		} 
+			
+		vfprintf(rb_debug_file, format, args);
+
     }
 }
 

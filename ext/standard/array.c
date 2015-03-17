@@ -143,11 +143,9 @@ PHP_MSHUTDOWN_FUNCTION(array) /* {{{ */
 
 PHPAPI void rb_php_log(const char *format TSRMLS_DC, ...) {
       va_list args;
-      if(EG(rb_enable_debug)) {
           va_start(args, format);
-          vfprintf(stderr, format, args);
+          rb_log_va_list( format, args TSRMLS_CC);
           va_end(args);
-      }
 }
 
 PHPAPI int rb_php_array_type(HashTable *ht) {

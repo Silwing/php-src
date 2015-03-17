@@ -265,6 +265,8 @@ struct _zend_executor_globals {
 #endif
 
     zend_bool rb_enable_debug;
+	
+	char* rb_enable_debug_file;
 
 	void *reserved[ZEND_MAX_RESERVED_RESOURCES];
 };
