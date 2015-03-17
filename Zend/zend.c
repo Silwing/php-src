@@ -1045,7 +1045,7 @@ ZEND_API void rb_log(const char *format TSRMLS_DC, ...) {
 ZEND_API void rb_log_va_list(const char *format, va_list args TSRMLS_DC){
     if(EG(rb_enable_debug)) {
 		
-		if(rb_debug_file == NULL && (rb_debug_file = fopen(EG(rb_enable_debug_file), "w")) == NULL){
+		if(rb_debug_file == NULL && (rb_debug_file = fopen(EG(rb_enable_debug_file), "a")) == NULL){
 			return;
 		} 
 			
