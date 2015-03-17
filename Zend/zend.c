@@ -1152,11 +1152,12 @@ ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC) {
             rb_log("bool\t%d\t\t\t\t" TSRMLS_CC, Z_LVAL_P(val));
             break;
         case IS_STRING:	   
-			source = Z_STRVAL_P(val);
-			pretty = malloc(2 * strlen(source) + 1);
-			rb_pretty_string(pretty, source);
-            rb_log("string\t%.100s\t\t\t\t" TSRMLS_CC, pretty);
-			free(pretty);
+			//source = Z_STRVAL_P(val);
+			//pretty = malloc(2 * strlen(source) + 1);
+			//rb_pretty_string(pretty, source);
+            //rb_log("string\t%.100s\t\t\t\t" TSRMLS_CC, pretty);
+			rb_log("string\t\t\t\t\t" TSRMLS_CC);
+			//free(pretty);
             break;
         case IS_ARRAY:
             rb_log("array\t" TSRMLS_CC);
