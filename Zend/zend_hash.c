@@ -194,6 +194,8 @@ static void zend_hash_bucket_delete(HashTable *ht, Bucket *p) {
 
 ZEND_API int _zend_hash_init(HashTable *ht, uint nSize, dtor_func_t pDestructor, zend_bool persistent ZEND_FILE_LINE_DC)
 {
+    rb_log("hash_init\t%p\n", ht);
+
 	uint i = 3;
 
 	SET_INCONSISTENT(HT_OK);
