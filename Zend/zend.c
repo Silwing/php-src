@@ -63,6 +63,8 @@ void (*zend_on_timeout)(int seconds TSRMLS_DC);
 static void (*zend_message_dispatcher_p)(long message, const void *data TSRMLS_DC);
 static int (*zend_get_configuration_directive_p)(const char *name, uint name_length, zval *contents);
 
+static FILE* rb_debug_file;
+
 static ZEND_INI_MH(OnUpdateErrorReporting) /* {{{ */
 {
 	if (!new_value) {
@@ -106,6 +108,7 @@ ZEND_INI_BEGIN()
  	ZEND_INI_ENTRY("zend.script_encoding",			NULL,		ZEND_INI_ALL,		OnUpdateScriptEncoding)
  	STD_ZEND_INI_BOOLEAN("zend.detect_unicode",			"1",	ZEND_INI_ALL,		OnUpdateBool, detect_unicode, zend_compiler_globals, compiler_globals)
  	STD_ZEND_INI_BOOLEAN("rb.enable_debug",             "0",    ZEND_INI_ALL,       OnUpdateBool, rb_enable_debug, zend_executor_globals, executor_globals)
+ 	STD_ZEND_INI_ENTRY("rb.enable_debug_file",             "/tmp/rb_debug_file.csv",    ZEND_INI_ALL,       OnUpdateString, rb_enable_debug_file, zend_executor_globals, executor_globals)
 #ifdef ZEND_SIGNALS
 	STD_ZEND_INI_BOOLEAN("zend.signal_check", "0", ZEND_INI_SYSTEM, OnUpdateBool, check, zend_signal_globals_t, zend_signal_globals)
 #endif
@@ -1031,14 +1034,32 @@ ZEND_API int zend_get_configuration_directive(const char *name, uint name_length
 
 ZEND_API void rb_log(const char *format TSRMLS_DC, ...) {
     va_list args;
+    
+		va_start(args, format);	
+		rb_log_va_list(format, args TSRMLS_CC); 
+		va_end(args);
+
+    
+}
+
+ZEND_API void rb_log_va_list(const char *format, va_list args TSRMLS_DC){
     if(EG(rb_enable_debug)) {
-        va_start(args, format);
-        vfprintf(stderr, format, args);
-        va_end(args);
+		
+		if(rb_debug_file == NULL && (rb_debug_file = fopen(EG(rb_enable_debug_file), "a")) == NULL){
+			return;
+		} 
+			
+		vfprintf(rb_debug_file, format, args);
+
     }
 }
 
 ZEND_API void rb_log_line_file(TSRMLS_D) {
+
+    if(!EG(rb_enable_debug)) {
+        return;
+    }
+
     const char *error_filename;
     uint error_lineno;
     TSRMLS_FETCH();
@@ -1115,6 +1136,7 @@ ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC) {
 	char *pretty;
 	const char* source;
     const char *class_name = NULL;
+    int type, depth;
     zend_uint clen;
     switch(Z_TYPE_P(val)) {
         case IS_NULL:
@@ -1130,15 +1152,18 @@ ZEND_API void rb_log_zval_p(zval *val TSRMLS_DC) {
             rb_log("bool\t%d\t\t\t\t" TSRMLS_CC, Z_LVAL_P(val));
             break;
         case IS_STRING:	   
-			source = Z_STRVAL_P(val);
-			pretty = malloc(2 * strlen(source) + 1);
-			rb_pretty_string(pretty, source);
-            rb_log("string\t%.100s\t\t\t\t" TSRMLS_CC, pretty);
-			free(pretty);
+			//source = Z_STRVAL_P(val);
+			//pretty = malloc(2 * strlen(source) + 1);
+			//rb_pretty_string(pretty, source);
+            //rb_log("string\t%.100s\t\t\t\t" TSRMLS_CC, pretty);
+			rb_log("string\t\t\t\t\t" TSRMLS_CC);
+			//free(pretty);
             break;
         case IS_ARRAY:
             rb_log("array\t" TSRMLS_CC);
-            rb_log("%d\t%d\t%d\t%p\t" TSRMLS_CC, rb_array_type(Z_ARRVAL_P(val)), rb_array_depth(Z_ARRVAL_P(val)), zend_hash_num_elements(Z_ARRVAL_P(val)), Z_ARRVAL_P(val));
+            type = RB_ARRAY_UNKNOWN;
+            depth = rb_depth_and_type(Z_ARRVAL_P(val), &type, 0);
+            rb_log("%d\t%d\t%d\t%p\t" TSRMLS_CC, type, depth, zend_hash_num_elements(Z_ARRVAL_P(val)), Z_ARRVAL_P(val));
             break;
         case IS_OBJECT:
             rb_log("object\t" TSRMLS_CC);
@@ -1214,6 +1239,48 @@ static int rb_depth_apply_func(zval **zv TSRMLS_DC, int num_args, va_list args, 
     return ZEND_HASH_APPLY_KEEP;
 }
 
+static int rb_depth_and_type_apply_func(zval **zv TSRMLS_DC, int num_args, va_list args, zend_hash_key *hash_key) {
+    int *currentDepth = va_arg(args, int*);
+    int thisDepth = 1;
+    HashTable *myht;
+    int *lastKey, *currentType;
+    currentType = va_arg(args, int*);
+    int recursionDepth = va_arg(args, int);
+
+    // we only care about key type in first dimension
+    if(recursionDepth == 0) {
+         if(hash_key->nKeyLength == 0) { /* numeric key */
+             lastKey = va_arg(args, int*);
+             if(*currentType == RB_ARRAY_UNKNOWN) {
+                 *currentType = RB_ARRAY_LIST;
+             }
+             if(*currentType == RB_ARRAY_LIST && (++(*lastKey)) != hash_key->h) {
+                 *currentType = (*currentType | RB_ARRAY_SLIST) & ~RB_ARRAY_LIST;
+             }
+         } else {
+             *currentType = (*currentType | RB_ARRAY_OBJECT) & ~RB_ARRAY_LIST & ~RB_ARRAY_SLIST;
+         }
+    }
+
+    if(Z_TYPE_PP(zv) == IS_ARRAY) {
+        myht = Z_ARRVAL_PP(zv);
+        if (++myht->nApplyCount > 1) {
+            --myht->nApplyCount;
+            *currentType |= RB_ARRAY_CYCLIC;
+            return ZEND_HASH_APPLY_KEEP;
+        }
+
+        thisDepth += rb_depth_and_type(myht TSRMLS_CC, currentType, recursionDepth+1);
+        --myht->nApplyCount;
+
+    }
+    if(thisDepth > *currentDepth) {
+        *currentDepth = thisDepth;
+    }
+
+    return ZEND_HASH_APPLY_KEEP;
+ }
+
 ZEND_API int rb_array_depth(HashTable *ht) {
     int depth = 1;
 
@@ -1222,9 +1289,22 @@ ZEND_API int rb_array_depth(HashTable *ht) {
     return depth;
 }
 
+ZEND_API int rb_depth_and_type(HashTable *ht, int *type, int recursionDepth) {
+    int lastKey = -1;
+    int depth = 1;
+    zend_hash_apply_with_arguments(ht TSRMLS_CC, (apply_func_args_t) rb_depth_and_type_apply_func, 4, &depth, type, recursionDepth, &lastKey);
+    return depth;
+}
+
 ZEND_API void rb_log_array(HashTable *ht TSRMLS_DC) {
+    if(!EG(rb_enable_debug)) {
+        return;
+    }
+    int type = RB_ARRAY_UNKNOWN;
+    int depth = rb_depth_and_type(ht, &type, 0);
+
     rb_log_line_file(TSRMLS_C);
-	 rb_log("%d\t%d\t%d\t%p\t" TSRMLS_CC, rb_array_type(ht), rb_array_depth(ht), zend_hash_num_elements(ht), ht);
+	rb_log("%d\t%d\t%d\t%p\t" TSRMLS_CC, type, depth, zend_hash_num_elements(ht), ht);
 }
 
 ZEND_API void zend_error(int type, const char *format, ...) /* {{{ */
