@@ -511,6 +511,8 @@ static void php_natsort(INTERNAL_FUNCTION_PARAMETERS, int fold_case) /* {{{ */
 	zval *array;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a", &array) == FAILURE) {
+	    rb_php_log_line_file(TSRMLS_C);
+	    rb_php_log("param fail\n" TSRMLS_CC);
 		return;
 	}
 
@@ -1324,6 +1326,8 @@ static void php_search_array(INTERNAL_FUNCTION_PARAMETERS, int behavior) /* {{{ 
 	int (*is_equal_func)(zval *, zval *, zval * TSRMLS_DC) = is_equal_function;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "za|b", &value, &array, &strict) == FAILURE) {
+	    rb_php_log_line_file(TSRMLS_C);
+	    rb_php_log("param fail\n" TSRMLS_CC);
 		return;
 	}
 
@@ -2054,7 +2058,7 @@ static void _phpi_pop(INTERNAL_FUNCTION_PARAMETERS, int off_the_end)
 	}
 
 	rb_php_log_array_function(Z_ARRVAL_P(stack) TSRMLS_CC);
-	rb_php_log("%d\n" TSRMLS_CC, off_the_end);
+	rb_php_log("%d\t" TSRMLS_CC, off_the_end);
 
 	/* Get the first or last value and copy it into the return value */
 	if (off_the_end) {
@@ -2063,6 +2067,8 @@ static void _phpi_pop(INTERNAL_FUNCTION_PARAMETERS, int off_the_end)
 		zend_hash_internal_pointer_reset(Z_ARRVAL_P(stack));
 	}
 	zend_hash_get_current_data(Z_ARRVAL_P(stack), (void **)&val);
+	rb_php_log_zval_p(*val TSRMLS_CC);
+	rb_php_log("\n" TSRMLS_CC);
 	RETVAL_ZVAL_FAST(*val);
 
 	/* Delete the first or last value */

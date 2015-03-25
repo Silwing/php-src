@@ -1061,7 +1061,7 @@ static inline zval **zend_fetch_dimension_address_inner(HashTable *ht, const zva
 
 	switch (dim->type) {
 		case IS_NULL:
-		    rb_log("null\t\t0\n"TSRMLS_CC);
+		    rb_log("null\t\t0\t"TSRMLS_CC);
 			offset_key = "";
 			offset_key_length = 0;
 			hval = zend_inline_hash_func("", 1);
@@ -1072,7 +1072,7 @@ static inline zval **zend_fetch_dimension_address_inner(HashTable *ht, const zva
 			offset_key = dim->value.str.val;
 			offset_key_length = dim->value.str.len;
 
-		    rb_log("string\t%s\t%d\n" TSRMLS_CC, offset_key, offset_key_length);
+		    rb_log("string\t%s\t%d\t" TSRMLS_CC, offset_key, offset_key_length);
 
 			if (dim_type == IS_CONST) {
 				hval = Z_HASH_P(dim);
@@ -1119,7 +1119,7 @@ fetch_string_dim:
 		    rb_log("long\t" TSRMLS_CC);
 			hval = Z_LVAL_P(dim);
 num_index:
-            rb_log("%lu\t\n" TSRMLS_CC, hval);
+            rb_log("%lu\t\t" TSRMLS_CC, hval);
 			if (zend_hash_index_find(ht, hval, (void **) &retval) == FAILURE) {
 				switch (type) {
 					case BP_VAR_R:
@@ -1177,12 +1177,15 @@ fetch_from_array:
 					Z_DELREF_P(new_zval);
 					rb_log("failure\n" TSRMLS_CC);
 				} else {
+				    rb_log_zval_p(*retval TSRMLS_CC);
 				    rb_log("success\n" TSRMLS_CC);
 				}
 			} else {
 	            rb_log("array_write\t" TSRMLS_CC);
 	            rb_log_array(Z_ARRVAL_P(container) TSRMLS_CC);
 				retval = zend_fetch_dimension_address_inner(Z_ARRVAL_P(container), dim, dim_type, type TSRMLS_CC);
+				rb_log_zval_p(*retval TSRMLS_CC);
+				rb_log("\n" TSRMLS_CC);
 			}
 			result->var.ptr_ptr = retval;
 			PZVAL_LOCK(*retval);
@@ -1335,6 +1338,8 @@ static void zend_fetch_dimension_address_read(temp_variable *result, zval *conta
             rb_log_array(Z_ARRVAL_P(container) TSRMLS_CC);
 
 			retval = zend_fetch_dimension_address_inner(Z_ARRVAL_P(container), dim, dim_type, type TSRMLS_CC);
+	        rb_php_log_zval_p(*retval TSRMLS_CC);
+	        rb_php_log("\n" TSRMLS_CC);
 			result->var.ptr = *retval;
 			PZVAL_LOCK(*retval);
 			return;
